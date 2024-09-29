@@ -1,0 +1,95 @@
+{
+  "private": true,
+  "name": "resumake.io",
+  "version": "3.0.0",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "dev": "next dev",
+    "start": "next start",
+    "build": "next build",
+    "lint": "next lint",
+    "format": "prettier --write src",
+    "format:check": "prettier --check src",
+    "postinstall": "cp node_modules/swiftlatex/dist/swift*.js node_modules/swiftlatex/dist/*.wasm public"
+  },
+  "dependencies": {
+    "archiver": "^5.3.1",
+    "common-tags": "^1.8.2",
+    "jotai": "^1.7.0",
+    "next": "^13.5.4",
+    "polished": "^4.2.2",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-hook-form": "^7.31.3",
+    "react-icons": "^4.4.0",
+    "react-pdf": "^5.7.2",
+    "styled-components": "^5.3.3",
+    "styled-reset": "^4.4.1",
+    "swiftlatex": "https://github.com/ducaale/SwiftLaTeX/releases/download/v1.0.0-experimental-9902734/swiftlatex-1.0.0-experimental-9902734.tgz"
+  },
+  "devDependencies": {
+    "@types/archiver": "^5.3.1",
+    "@types/common-tags": "^1.8.1",
+    "@types/node": "16.11.12",
+    "@types/react": "17.0.37",
+    "@types/react-pdf": "^5.0.9",
+    "@types/styled-components": "^5.1.17",
+    "@typescript-eslint/eslint-plugin": "^5.6.0",
+    "@typescript-eslint/parser": "^5.6.0",
+    "eslint": "^7.32.0",
+    "eslint-config-next": "^13.4.7",
+    "eslint-plugin-import": "^2.25.3",
+    "eslint-plugin-react": "^7.27.1",
+    "eslint-plugin-react-hooks": "^4.3.0",
+    "prettier": "2.7.1",
+    "typescript": "4.5.3"
+  },
+  "prettier": {
+    "semi": false,
+    "singleQuote": true,
+    "trailingComma": "none"
+  },
+  "eslintConfig": {
+    "extends": [
+      "plugin:react/recommended",
+      "plugin:@typescript-eslint/recommended",
+      "plugin:@next/next/recommended"
+    ],
+    "plugins": [
+      "@typescript-eslint",
+      "react-hooks"
+    ],
+    "parser": "@typescript-eslint/parser",
+    "parserOptions": {
+      "ecmaVersion": 2018,
+      "sourceType": "module"
+    },
+    "settings": {
+      "react": {
+        "pragma": "React",
+        "version": "detect"
+      }
+    },
+    "rules": {
+      "no-console": "warn",
+      "react-hooks/rules-of-hooks": "error",
+      "react-hooks/exhaustive-deps": "error",
+      "react/prop-types": "off",
+      "react/react-in-jsx-scope": "off",
+      "react/display-name": "off",
+      "@typescript-eslint/no-empty-function": "off",
+      "@typescript-eslint/explicit-module-boundary-types": "off",
+      "@typescript-eslint/no-empty-interface": "off",
+      "@typescript-eslint/ban-types": "off",
+      "@typescript-eslint/no-unused-vars": [
+        "error",
+        {
+          "args": "none"
+        }
+      ],
+      "@typescript-eslint/no-inferrable-types": "off"
+    }
+  }
+}
