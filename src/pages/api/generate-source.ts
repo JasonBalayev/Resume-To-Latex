@@ -38,6 +38,7 @@ function generateSourceCode(formData: FormValues) {
   zip.append(readme, { name: 'README.md' })
 
   if (opts.inputs) {
+    //@ts-expect-error errors for some reason out of the box from guy.
     zip.directory(opts.inputs, '../')
   }
 

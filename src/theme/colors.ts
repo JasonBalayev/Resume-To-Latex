@@ -3,11 +3,13 @@ export const lightGray = '#121217'
 export const gray = '#161619'
 export const white = '#ffffff'
 export const green = '#22d7a6'
+export const teal = '#46baf0'
 
-export const primary = green
+export const primary = teal
 export const accent = green
 export const foreground = white
-export const background = '#14171d'
+// export const background = '#14171d'
+export const background = white
 export const borders = '#202530'
 export const placeholders = borders
 export const card = lightGray
