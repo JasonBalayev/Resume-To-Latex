@@ -335,6 +335,10 @@ function template1(values: FormValues) {
 
     \\begin{document}
     \\vspace*{-40pt}
+    ${console.log("In template section")}
+    ${console.log(values.sections)}
+    ${console.log(headings)}
+    ${console.log(values)}
 
     ${values.sections
       .map((section) => {
