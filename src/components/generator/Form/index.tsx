@@ -18,6 +18,7 @@ import latex from '../../../lib/latex'
 import getTemplateData from '../../../lib/templates'
 
 async function generateResume(formData: FormValues): Promise<string> {
+  
   const { texDoc, opts } = getTemplateData(formData)
   return latex(texDoc, opts)
 }
@@ -57,6 +58,9 @@ export function Form() {
   const handleFormSubmit = useCallback(async () => {
     const formValues = formContext.getValues()
     setResume({ ...resume, isLoading: true })
+    console.log("Form submitting section")
+    console.log(formValues)
+    console.log(resume)
     try {
       const newResumeUrl = await generateResume(formValues)
       setResume({ ...resume, url: newResumeUrl, isLoading: false })

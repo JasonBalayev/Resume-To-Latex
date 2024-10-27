@@ -74,6 +74,13 @@ export default function Home() {
     reader.addEventListener('load', (e) => {
       // TODO: validate JSON schema using Zod
       const jsonResume = JSON.parse(e.target?.result as string)
+
+      // replace the 'basics' section name with 'profile' since the template making code needs it to be 'profile', but the json schema uses 'basics'
+      const sectionNames = Object.keys(jsonResume)
+      jsonResume.headings = sectionNames
+
+      jsonResume.sections = ["profile", "education", "work", "skills", "projects", "awards"]
+
       localStorage.setItem('jsonResume', JSON.stringify(jsonResume))
       router.push('/generator')
     })
