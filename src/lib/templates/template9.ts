@@ -99,7 +99,7 @@ const generator: Generator = {
 
       ${work.map((job, i) => {
         const {
-          name,
+          company: name,
           position,
           location,
           startDate,

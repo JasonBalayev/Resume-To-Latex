@@ -107,8 +107,9 @@ const generator: Generator = {
       \\vspace{1mm}
 
       ${work.map((job) => {
-        const { name, position, location, startDate, endDate, highlights } = job
-
+        const { company: name, position, location, startDate, endDate, highlights } = job
+        console.log(job)
+        console.log(name)
         let line1 = ''
         let line2 = ''
         let highlightLines = ''
@@ -135,7 +136,7 @@ const generator: Generator = {
 
         if (line1) line1 += '\\\\'
         if (line2) line2 += '\\\\'
-        
+
         if (highlights && highlights.length > 0) {
           highlightLines = source`
               \\vspace{-1mm}

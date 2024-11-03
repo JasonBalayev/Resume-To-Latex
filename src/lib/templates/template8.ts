@@ -97,7 +97,7 @@ const generator: Generator = {
       \\begin{cvsection}{${heading || 'Experience'}}
       ${work.map((job) => {
         const {
-          name,
+          company: name,
           position,
           location,
           startDate,
