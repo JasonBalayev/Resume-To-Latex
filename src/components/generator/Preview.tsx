@@ -5,7 +5,7 @@ import type { PDFDocumentProxy } from 'pdfjs-dist/types/src/display/api'
 import styled from 'styled-components'
 import { resumeAtom } from '../../atoms/resume'
 import { PrimaryButton } from '../core/Button'
-// import { colors } from '../../theme'
+import { darken } from 'polished'
 
 const workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.js`
 pdfjs.GlobalWorkerOptions.workerSrc = workerSrc
@@ -52,6 +52,30 @@ const ResumePage = styled(Page)`
   }
 `
 
+const ExportButton = styled(PrimaryButton)`
+  background: linear-gradient(135deg, #e94560, ${darken(0.1, '#e94560')});
+  color: #fff;
+  border: none;
+  padding: 1em 2.5em; /* Padding for a substantial look */
+  font-size: 1em;
+  font-weight: bold;
+  border-radius: 12px; /* Rounded corners */
+  transition: background 0.3s, transform 0.2s;
+  box-shadow: 0 6px 12px rgba(233, 69, 96, 0.2);
+  margin-bottom: 1rem; /* Space below the button */
+
+  &:hover {
+    background: ${darken(0.15, '#e94560')};
+    transform: translateY(-3px);
+    box-shadow: 0 8px 16px rgba(233, 69, 96, 0.3);
+  }
+
+  &:active {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(233, 69, 96, 0.2);
+  }
+`
+
 export function Preview() {
   const [resume] = useAtom(resumeAtom)
   const [, setPageCount] = useState(1)
@@ -66,9 +90,9 @@ export function Preview() {
 
   return (
     <Output>
-      <PrimaryButton onClick={() => window.open(resume.url)}>
+      <ExportButton onClick={() => window.open(resume.url)}>
         Export as PDF
-      </PrimaryButton>
+      </ExportButton>
       <PdfContainer>
         <ResumeDocument
           file={resume.url || '/blank.pdf'}
