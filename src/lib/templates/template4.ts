@@ -143,7 +143,7 @@ const generator: Generator = {
       \\section{${heading || 'Experience'}}
       ${work.map((job) => {
         const {
-          name,
+          company: name,
           position,
           location,
           startDate,
@@ -185,6 +185,8 @@ const generator: Generator = {
               ${highlights.map((highlight) => `\\item ${highlight}`)}
             \\end{tightemize}
             `
+        } else {
+          highlightLines = ''
         }
 
         return stripIndent`

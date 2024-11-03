@@ -74,7 +74,7 @@ const generator: Generator = {
       \\section{${heading || 'Experience'}}
       ${work.map((job) => {
         const {
-          name,
+          company: name,
           position,
           location,
           startDate,
