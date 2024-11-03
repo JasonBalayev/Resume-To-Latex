@@ -108,8 +108,6 @@ const generator: Generator = {
 
       ${work.map((job) => {
         const { company: name, position, location, startDate, endDate, highlights } = job
-        console.log(job)
-        console.log(name)
         let line1 = ''
         let line2 = ''
         let highlightLines = ''

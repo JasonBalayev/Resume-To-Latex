@@ -23,7 +23,7 @@ const Wrapper = styled.div`
   background: linear-gradient(135deg, #1a1a1d 0%, #0d0d0d 100%);
   animation: ${fadeIn} 0.5s ease-in;
   overflow: hidden; /* Add this to prevent scrollbars due to cursor */
-  cursor: none;
+  cursor: none; 
 `
 
 const Main = styled.main`
@@ -81,38 +81,50 @@ const ButtonGroup = styled.div`
 `
 
 const StyledButton = styled(Button)`
-  background: #333;
+  background: linear-gradient(135deg, #333, ${darken(0.1, '#333')});
   color: #fff;
   border: none;
-  padding: 1em 2em;
-  font-size: 1.1em;
-  border-radius: 8px;
+  padding: 1em 3em; /* Increased padding */
+  font-size: 1em; /* Adjusted font size for better balance */
+  font-weight: 500;
+  border-radius: 12px; /* Slightly more rounded corners */
   transition: background 0.3s, transform 0.2s;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
 
   &:hover {
-    background: ${darken(0.1, '#333')};
-    transform: translateY(-2px);
-    box-shadow: 0 6px 8px rgba(0, 0, 0, 0.4);
+    background: ${darken(0.15, '#333')};
+    transform: translateY(-3px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
   }
-`
+
+  &:active {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  }
+`;
 
 const StyledPrimaryButton = styled(PrimaryButton)`
-  background: #e94560;
+  background: linear-gradient(135deg, #e94560, ${darken(0.1, '#e94560')});
   color: #fff;
   border: none;
-  padding: 1em 2em;
-  font-size: 1.1em;
-  border-radius: 8px;
+  padding: 1em 3em; /* Increased padding */
+  font-size: 1em; /* Adjusted font size for consistency */
+  font-weight: 500;
+  border-radius: 12px; /* Slightly more rounded corners */
   transition: background 0.3s, transform 0.2s;
-  box-shadow: 0 4px 6px rgba(233, 69, 96, 0.3);
+  box-shadow: 0 6px 12px rgba(233, 69, 96, 0.2);
 
   &:hover {
-    background: ${darken(0.1, '#e94560')};
-    transform: translateY(-2px);
-    box-shadow: 0 6px 8px rgba(233, 69, 96, 0.4);
+    background: ${darken(0.15, '#e94560')};
+    transform: translateY(-3px);
+    box-shadow: 0 8px 16px rgba(233, 69, 96, 0.3);
   }
-`
+
+  &:active {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(233, 69, 96, 0.2);
+  }
+`;
 
 const HiddenInput = styled.input`
   display: none;

@@ -1,5 +1,6 @@
 import { useFormContext, Controller } from 'react-hook-form'
-import { primary, foreground } from '../../../../theme/colors' // Adjust the import path if necessary
+import { primary } from '../../../../theme/colors' 
+import { darken } from 'polished'
 
 import { FormSection } from './FormSection'
 import { TEMPLATES } from '../../../../lib/templates/constants'
@@ -25,16 +26,21 @@ export function TemplatesSection() {
                   flexDirection: 'column',
                   alignItems: 'center',
                   padding: '12px 16px',
-                  border: `2px solid ${primary}`,
-                  borderRadius: '8px',
+                  borderRadius: '12px', 
                   cursor: 'pointer',
-                  transition: 'transform 0.2s ease-in-out',
-                  backgroundColor: primary,
-                  color: foreground,
-                  boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.1)',
+                  transition: 'transform 0.2s ease-in-out, background 0.3s ease',
+                  background: `linear-gradient(135deg, ${primary}, ${darken(0.1, primary)})`, 
+                  color: '#fff', 
+                  boxShadow: '0px 6px 12px rgba(0, 0, 0, 0.2)', 
                 }}
-                onMouseEnter={(e) => (e.currentTarget.style.transform = 'scale(1.05)')}
-                onMouseLeave={(e) => (e.currentTarget.style.transform = 'scale(1)')}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.transform = 'scale(1.05)'
+                  e.currentTarget.style.background = `linear-gradient(135deg, ${darken(0.1, primary)}, ${darken(0.15, primary)})`
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.transform = 'scale(1)'
+                  e.currentTarget.style.background = `linear-gradient(135deg, ${primary}, ${darken(0.1, primary)})`
+                }}
               >
                 <input
                   type="radio"
@@ -45,7 +51,6 @@ export function TemplatesSection() {
                 />
                 <span style={{ fontWeight: 'bold', marginBottom: '8px' }}>Template {templateId}</span>
 
-                {/* Checkmark */}
                 {field.value === templateId && (
                   <div
                     style={{
@@ -55,7 +60,7 @@ export function TemplatesSection() {
                       width: '20px',
                       height: '20px',
                       borderRadius: '50%',
-                      backgroundColor: foreground,
+                      backgroundColor: '#fff', 
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
@@ -75,35 +80,3 @@ export function TemplatesSection() {
     </FormSection>
   )
 }
-// import { useFormContext, Controller } from 'react-hook-form'
-
-// import { FormSection } from './FormSection'
-// import { TEMPLATES } from '../../../../lib/templates/constants'
-
-// import { FormValues } from '../../../../types'
-
-// export function TemplatesSection() {
-//   const { control } = useFormContext<FormValues>()
-
-//   return (
-//     <FormSection title="Choose a Template">
-//       {TEMPLATES.map((templateId) => (
-//         <label key={templateId} style={{ display: 'inline-block', padding: 8 }}>
-//           Template {templateId}
-//           <Controller
-//             control={control}
-//             name="selectedTemplate"
-//             render={({ field }) => (
-//               <input
-//                 type="radio"
-//                 onChange={(e) => field.onChange(Number(e.target.value))}
-//                 value={templateId}
-//                 checked={field.value === templateId}
-//               />
-//             )}
-//           />
-//         </label>
-//       ))}
-//     </FormSection>
-//   )
-// }
