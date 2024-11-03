@@ -23,6 +23,7 @@ const Wrapper = styled.div`
   background: linear-gradient(135deg, #1a1a1d 0%, #0d0d0d 100%);
   animation: ${fadeIn} 0.5s ease-in;
   overflow: hidden; /* Add this to prevent scrollbars due to cursor */
+  cursor: none;
 `
 
 const Main = styled.main`

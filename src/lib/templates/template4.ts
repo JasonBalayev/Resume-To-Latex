@@ -179,7 +179,7 @@ const generator: Generator = {
           line1 += `\\hfill \\location{${dateRange}}`
         }
 
-        if (highlights) {
+        if (highlights && highlights.length > 0) {
           highlightLines = source`
             \\begin{tightemize}
               ${highlights.map((highlight) => `\\item ${highlight}`)}

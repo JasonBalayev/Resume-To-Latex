@@ -135,8 +135,8 @@ const generator: Generator = {
 
         if (line1) line1 += '\\\\'
         if (line2) line2 += '\\\\'
-
-        if (highlights) {
+        
+        if (highlights && highlights.length > 0) {
           highlightLines = source`
               \\vspace{-1mm}
               \\begin{itemize} \\itemsep 1pt

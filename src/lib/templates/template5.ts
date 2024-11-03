@@ -141,7 +141,7 @@ const generator: Omit<Generator, 'resumeHeader'> = {
           jobLine += `${location}\\\\`
         }
 
-        if (highlights) {
+        if (highlights && highlights.length > 0) {
           jobLine += source`
             \\begin{itemize} \\itemsep 3pt
             ${highlights.map((highlight) => `\\item ${highlight}`)}
