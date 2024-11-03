@@ -93,7 +93,7 @@ const generator: Generator = {
           dateRange = endDate
         }
 
-        if (highlights) {
+        if (highlights && highlights.length > 0) {
           highlightLines = source`
             \\begin{itemize}%
               ${highlights.map((highlight) => `\\item ${highlight}`)}

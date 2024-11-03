@@ -110,7 +110,7 @@ const generator: Generator = {
           dateRange = endDate
         }
 
-        if (highlights) {
+        if (highlights && highlights.length > 0) {
           dutyLines = source`
             \\begin{itemize}
               ${highlights.map((duty) => `\\item ${duty}`)}

@@ -111,7 +111,7 @@ const generator: Omit<Generator, 'resumeHeader'> = {
           dateRange = endDate
         }
 
-        if (highlights) {
+        if (highlights && highlights.length > 0) {
           dutyLines = source`
             \\begin{newitemize}
               ${highlights.map((duty) => `\\item {${duty}}`)}
