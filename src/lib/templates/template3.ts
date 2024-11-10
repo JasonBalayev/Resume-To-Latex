@@ -3,22 +3,55 @@ import { WHITESPACE } from './constants'
 import type { FormValues, Generator } from '../../types'
 
 const generator: Generator = {
-  profileSection(basics) {
-    if (!basics) {
-      return ''
+  profileSection(profile) {
+    if (!profile) {
+      return '\\namesection{Your}{Name}{}'
     }
 
-    const { name, email, phone, location = {}, website } = basics
-    const websiteLine = website ? `\\href{${website}}{${website}}` : ''
+    const { name, email, phone, location = {}, website } = profile
 
-    const info = [email, phone, location.address, websiteLine]
+    let nameStart = ''
+    let nameEnd = ''
+
+    if (name) {
+      const names = name.split(' ')
+
+      if (names.length === 1) {
+        nameStart = names[0]
+        nameEnd = ''
+      } else {
+        nameStart = names[0]
+        nameEnd = names.slice(1, names.length).join(' ')
+      }
+    }
+
+    const info = [email, phone, location.address, website]
       .filter(Boolean)
       .join(' | ')
 
+    const sectionHeader = stripIndent`
+      %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+      %
+      %     Profile
+      %
+      %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    `
+
+    if (!name) {
+      return stripIndent`
+        ${sectionHeader}
+        \\centering{
+          \\color{headings}
+          \\fontspec[Path = fonts/]{Raleway-Medium}
+          \\fontsize{11pt}{14pt}
+          \\selectfont ${info}
+        }
+      `
+    }
+
     return stripIndent`
-      \\begin{tabular*}{7in}{l@{\\extracolsep{\\fill}}r}
-      \\textbf{\\Large ${name}} & \\textit{${info}}
-      \\end{tabular*}
+      ${sectionHeader}
+      \\namesection{${nameStart}}{${nameEnd}}{${info}}
     `
   },
 
@@ -28,61 +61,71 @@ const generator: Generator = {
     }
 
     return source`
-      %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-      \\resheading{${heading || 'Education'}}
-      %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-      \\begin{itemize}[leftmargin=*]
-
+      %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+      %
+      %     Education
+      %
+      %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+      \\section{${heading || 'Education'}}
+      \\raggedright
       ${education.map((school) => {
         const {
-          institution = '',
-          location = '',
-          studyType = '',
-          area = '',
-          score = '',
-          startDate = '',
-          endDate = ''
+          institution,
+          location,
+          studyType,
+          area,
+          score,
+          startDate,
+          endDate
         } = school
 
-        let formattedLocation = ''
+        let line1 = ''
+        let line2 = ''
 
-        if (location) {
-          formattedLocation = location + '\\\\'
+        if (institution) {
+          line1 += `\\runsubsection{${institution}}`
         }
-
-        let degreeLine = ''
 
         if (studyType && area) {
-          degreeLine = `${studyType} ${area}`
-        } else if (studyType || area) {
-          degreeLine = studyType || area
+          line1 += `\\descript{| ${studyType} ${area}}`
+        } else if (studyType) {
+          line1 += `\\descript{| ${studyType}}`
+        } else if (area) {
+          line1 += `\\descript{| ${area}}`
         }
 
-        if (score) {
-          degreeLine += degreeLine ? `, GPA: ${score}` : `GPA: ${score}`
-        }
-
-        let dateRange = ''
+        let dateRange
 
         if (startDate && endDate) {
-          dateRange = `${startDate} | ${endDate}`
+          dateRange = `${startDate} - ${endDate}`
         } else if (startDate) {
-          dateRange = `${startDate} | Present`
+          dateRange = `${startDate} - Present`
         } else {
           dateRange = endDate
         }
 
-        return stripIndent`
-          \\item[]
-            \\school
-              {${institution || ''}}
-              {${formattedLocation || ''}}
-              {${degreeLine}}
-              {${dateRange || ''}}
+        const locationAndDate = [location, dateRange]
+          .filter(Boolean)
+          .join(' | ')
+
+        if (locationAndDate) {
+          line1 += `\\hfill \\location{${locationAndDate}}`
+        }
+
+        if (line1) {
+          line1 += '\\\\'
+        }
+
+        if (score) {
+          line2 += `GPA: ${score}\\\\`
+        }
+
+        return `
+          ${line1}
+          ${line2}
+          \\sectionsep
         `
       })}
-
-      \\end{itemize}
     `
   },
 
@@ -92,45 +135,66 @@ const generator: Generator = {
     }
 
     return source`
-      %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-      \\resheading{${heading || 'Experience'}}
-      %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-      \\begin{itemize}[leftmargin=*]
+      %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+      %
+      %     Experience
+      %
+      %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+      \\section{${heading || 'Experience'}}
       ${work.map((job) => {
-        const { company: name, position, location, startDate, endDate, highlights } = job
+        const {
+          company: name,
+          position,
+          location,
+          startDate,
+          endDate = '',
+          highlights
+        } = job
 
-        let dateRange
-        let dutyLines
+        let line1 = ''
+        let dateRange = ''
+        let highlightLines = ''
+
+        if (name) {
+          line1 += `\\runsubsection{${name}}`
+        }
+
+        if (position) {
+          line1 += `\\descript{| ${position}}`
+        }
 
         if (startDate && endDate) {
-          dateRange = `${startDate} | ${endDate}`
+          dateRange = `${startDate} – ${endDate}`
         } else if (startDate) {
-          dateRange = `${startDate} | Present`
+          dateRange = `${startDate} – Present`
         } else {
           dateRange = endDate
         }
 
+        if (location && dateRange) {
+          line1 += `\\hfill \\location{${location} | ${dateRange}}`
+        } else if (location) {
+          line1 += `\\hfill \\location{${location}}`
+        } else if (dateRange) {
+          line1 += `\\hfill \\location{${dateRange}}`
+        }
+
         if (highlights && highlights.length > 0) {
-          dutyLines = source`
-            \\begin{itemize}
-              ${highlights.map((duty) => `\\item ${duty}`)}
-            \\end{itemize}
+          highlightLines = source`
+            \\begin{tightemize}
+              ${highlights.map((highlight) => `\\item ${highlight}`)}
+            \\end{tightemize}
             `
         } else {
-          dutyLines = ''
+          highlightLines = ''
         }
 
         return stripIndent`
-          \\item[]
-            \\job
-              {${name || ''}}
-              {${location || ''}}
-              {${position || ''}}
-              {${dateRange || ''}}
-              ${dutyLines}
+          ${line1}
+          ${highlightLines}
+          \\sectionsep
         `
       })}
-      \\end{itemize}
     `
   },
 
@@ -140,16 +204,20 @@ const generator: Generator = {
     }
 
     return source`
-      %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-      \\resheading{${heading || 'Skills'}}
-      %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-      \\begin{itemize}[leftmargin=*]
-      \\setlength\\itemsep{0em}
+      %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+      %
+      %     Skills
+      %
+      %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+      \\section{${heading || 'Skills'}}
+      \\raggedright
+      \\begin{tabular}{ l l }
       ${skills.map((skill) => {
         const { name = '', keywords = [] } = skill
-        return `\\item[] \\skill{${name}}{${keywords.join(', ')}}`
+        return `\\descript{${name}} & {\\location{${keywords.join(', ')}}} \\\\`
       })}
-      \\end{itemize}
+      \\end{tabular}
+      \\sectionsep
     `
   },
 
@@ -159,28 +227,47 @@ const generator: Generator = {
     }
 
     return source`
-      %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-      \\resheading{${heading || 'Projects'}}
-      %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-      \\begin{itemize}[leftmargin=*]
+      %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+      %
+      %     Projects
+      %
+      %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+      \\section{${heading || 'Projects'}}
+      \\raggedright
       ${projects.map((project) => {
-        const { name = '', description = '', keywords = [], url = '' } = project
+        const { name, description, keywords, url } = project
 
-        const descriptionWithNewline = description
-          ? `\\\\${description}`
-          : description
-        const urlLine = url ? `\\href{${url}}{${url}}` : ''
+        let line1 = ''
+        let line2 = ''
+        let line3 = ''
 
-        return stripIndent`
-          \\item[]
-            \\project
-              {${name}}
-              {${keywords.join(', ')}}
-              {${urlLine}}
-              {${descriptionWithNewline}}
+        if (name) {
+          line1 += `\\runsubsection{\\large{${name}}}`
+        }
+
+        if (keywords) {
+          line2 += `\\descript{| ${keywords.join(', ')}}`
+        }
+
+        if (url) {
+          line2 += `\\hfill \\location{${url}}`
+        }
+
+        if (line2) {
+          line2 += '\\\\'
+        }
+
+        if (description) {
+          line3 += `${description}\\\\`
+        }
+
+        return `
+          ${line1}
+          ${line2}
+          ${line3}
+          \\sectionsep
         `
       })}
-      \\end{itemize}
     `
   },
 
@@ -190,122 +277,86 @@ const generator: Generator = {
     }
 
     return source`
-      %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-      \\resheading{${heading || 'Awards'}}
-      %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-      \\begin{itemize}[leftmargin=*]
+      %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+      %
+      %     Awards
+      %
+      %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+      \\section{${heading || 'Awards'}}
       ${awards.map((award) => {
-        const { title = '', summary = '', date = '', awarder = '' } = award
-
-        const summaryWithNewline = summary ? `\\\\${summary}` : summary
+        const { title, summary, date, awarder } = award
+        const info = [awarder, date].filter(Boolean).join(' | ')
 
         return stripIndent`
-          \\item[]
-            \\award
-              {${title}}
-              {${date}}
-              {${awarder}}
-              {${summaryWithNewline}}
+          \\runsubsection{\\large{${title || ''}}} \\descript{${info}} \\\\
+          ${summary ? `${summary}\\\\` : ''}
+          \\sectionsep
         `
       })}
-      \\end{itemize}
     `
   },
 
   resumeHeader() {
     return stripIndent`
-      % (c) 2002 Matthew Boedicker <mboedick@mboedick.org> (original author) http://mboedick.org
-      % (c) 2003-2007 David J. Grant <davidgrant-at-gmail.com> http://www.davidgrant.ca
-      % (c) 2008 Nathaniel Johnston <nathaniel@nathanieljohnston.com> http://www.nathanieljohnston.com
+      %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+      % This is a modified ONE COLUMN version of
+      % the following template:
       %
-      % (c) 2012 Scott Clark <sc932@cornell.edu> cam.cornell.edu/~sc932
+      % Deedy - One Page Two Column Resume
+      % LaTeX Template
+      % Version 1.1 (30/4/2014)
       %
-      %This work is licensed under the Creative Commons Attribution-Noncommercial-Share Alike 2.5 License. To view a copy of this license, visit http://creativecommons.org/licenses/by-nc-sa/2.5/ or send a letter to Creative Commons, 543 Howard Street, 5th Floor, San Francisco, California, 94105, USA.
-
-      \\documentclass[11pt]{article}
-      \\newlength{\\outerbordwidth}
-      \\pagestyle{empty}
-      \\raggedbottom
-      \\raggedright
-      \\usepackage[svgnames]{xcolor}
-      \\usepackage{framed}
-      \\usepackage{tocloft}
-      \\usepackage{enumitem}
-      \\usepackage{textcomp}
-      \\usepackage[utf8]{inputenc}
-      \\usepackage[T1]{fontenc}
-      \\usepackage[hidelinks]{hyperref}
-
-
-      %-----------------------------------------------------------
-      %Edit these values as you see fit
-
-      \\setlength{\\outerbordwidth}{3pt}  % Width of border outside of title bars
-      \\definecolor{shadecolor}{gray}{0.75}  % Outer background color of title bars (0 = black, 1 = white)
-      \\definecolor{shadecolorB}{gray}{0.93}  % Inner background color of title bars
-
-
-      %-----------------------------------------------------------
-      %Margin setup
-
-      \\setlength{\\evensidemargin}{-0.25in}
-      \\setlength{\\headheight}{0in}
-      \\setlength{\\headsep}{0in}
-      \\setlength{\\oddsidemargin}{-0.25in}
-      \\setlength{\\tabcolsep}{0in}
-      \\setlength{\\textheight}{9.5in}
-      \\setlength{\\textwidth}{7in}
-      \\setlength{\\topmargin}{-0.3in}
-      \\setlength{\\topskip}{0in}
-      \\setlength{\\voffset}{0.1in}
-
-
-      %-----------------------------------------------------------
-      %Custom commands
-      \\newcommand{\\resitem}[1]{\\item #1 \\vspace{-4pt}}
-      \\newcommand{\\resheading}[1]{
-        \\parbox{\\textwidth}{\\setlength{\\FrameSep}{\\outerbordwidth}
-          \\begin{shaded}
-      \\setlength{\\fboxsep}{0pt}\\framebox[\\textwidth][l]{\\setlength{\\fboxsep}{4pt}\\fcolorbox{shadecolorB}{shadecolorB}{\\textbf{\\sffamily{\\mbox{~}\\makebox[6.762in][l]{\\large #1} \\vphantom{p\\^{E}}}}}}
-          \\end{shaded}
-        }\\vspace{-11pt}
-      }
-      \\newcommand{\\ressubheading}[4]{
-      \\begin{tabular*}{6.5in}{l@{\\cftdotfill{\\cftsecdotsep}\\extracolsep{\\fill}}r}
-          \\textbf{#1} & #2 \\\\
-          \\textit{#3} & \\textit{#4} \\\\
-
-      \\end{tabular*}\\vspace{-6pt}}
-
-      \\newcommand{\\school}[4]{\\vspace{1.5mm}
-        \\textbf{#1} \\hfill #2 \\textit{#3} \\hfill \\textit{#4} \\vspace{1.5mm}
-      }
-
-      \\newcommand{\\job}[4]{
-        \\textbf{#1} \\hfill #2 \\hfill \\textit{#3} \\hfill \\textit{#4}
-      }
-
-      \\newcommand{\\skill}[2]{
-        \\textbf{#1} #2
-      }
-
-      \\newcommand{\\project}[4]{ \\vspace{1.5mm}
-        \\textbf{#1} #2 \\hfill \\textit{#3}#4 \\vspace{1.5mm}
-      }
-
-      \\newcommand{\\award}[4]{ \\vspace{1.5mm}
-        \\textbf{#1} #2 \\hfill \\textit{#3} #4 \\vspace{1.5mm}
-      }
-      %-----------------------------------------------------------
+      % Original author:
+      % Debarghya Das (http://debarghyadas.com)
+      %
+      % Original repository:
+      % https://github.com/deedydas/Deedy-Resume
+      %
+      % IMPORTANT: THIS TEMPLATE NEEDS TO BE COMPILED WITH XeLaTeX
+      %
+      % This template uses several fonts not included with Windows/Linux by
+      % default. If you get compilation errors saying a font is missing, find the line
+      % on which the font is used and either change it to a font included with your
+      % operating system or comment the line out to use the default font.
+      %
+      %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+      %
+      % TODO:
+      % 1. Integrate biber/bibtex for article citation under publications.
+      % 2. Figure out a smoother way for the document to flow onto the next page.
+      % 3. Add styling information for a "Projects/Hacks" section.
+      % 4. Add location/address information
+      % 5. Merge OpenFont and MacFonts as a single sty with options.
+      %
+      %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+      %
+      % CHANGELOG:
+      % v1.1:
+      % 1. Fixed several compilation bugs with \\renewcommand
+      % 2. Got Open-source fonts (Windows/Linux support)
+      % 3. Added Last Updated
+      % 4. Move Title styling into .sty
+      % 5. Commented .sty file.
+      %
+      %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+      %
+      % Known Issues:
+      % 1. Overflows onto second page if any column's contents are more than the
+      % vertical limit
+      % 2. Hacky space on the first bullet point on the second column.
+      %
+      %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     `
   }
 }
 
-function template3(values: FormValues) {
+function template4(values: FormValues) {
   const { headings = {} } = values
 
   return stripIndent`
     ${generator.resumeHeader()}
+    \\documentclass[]{deedy-resume-openfont}
+
     \\begin{document}
     ${values.sections
       .map((section) => {
@@ -341,4 +392,4 @@ function template3(values: FormValues) {
   `
 }
 
-export default template3
+export default template4
