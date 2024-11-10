@@ -2,28 +2,35 @@ import { stripIndent, source } from 'common-tags'
 import { WHITESPACE } from './constants'
 import type { FormValues, Generator } from '../../types'
 
-const generator: Omit<Generator, 'resumeHeader'> = {
+const generator: Generator = {
   profileSection(basics) {
     if (!basics) {
       return ''
     }
 
-    const { name = '', email, phone, location = {}, website } = basics
+    const { name, email, phone = '', location = {}, website } = basics
     const websiteLine = website ? `\\href{${website}}{${website}}` : ''
 
-    const info = [email, phone, location.address, websiteLine].filter(Boolean)
+    let addressLine = ''
+    let contactsLine = ''
 
-    return stripIndent`
-      \\begin{center}
-      % Personal
-      % -----------------------------------------------------
-      {\\fontsize{\\sizeone}{\\sizeone}\\fontspec[Path = fonts/,LetterSpace=15]{Montserrat-Regular} ${name.toUpperCase()}}
-      ${name && info.length > 1 ? '\\\\' : ''}
-      \\vspace{2mm}
-      {\\fontsize{1em}{1em}\\fontspec[Path = fonts/]{Montserrat-Light} ${info.join(
-        ' -- '
-      )}}
-      \\end{center}
+    if (location.address && phone) {
+      addressLine = `\\address{${location.address} \\linebreak ${phone}}`
+    } else if (location.address || phone) {
+      addressLine = `\\address{${location.address || phone}}`
+    }
+
+    if (email && website) {
+      contactsLine = `\\contacts{${email} \\linebreak ${websiteLine}}`
+    } else if (email || website) {
+      contactsLine = `\\contacts{${email || websiteLine}}`
+    }
+
+    return `
+      % Set applicant's personal data for header
+      \\name{${name || ''}}
+      ${addressLine}
+      ${contactsLine}
     `
   },
 
@@ -33,50 +40,51 @@ const generator: Omit<Generator, 'resumeHeader'> = {
     }
 
     return source`
-      % Chapter: Education
-      % ------------------
-
-      \\chap{${heading ? heading.toUpperCase() : 'EDUCATION'}}{
-
+      \\begin{cvsection}{${heading || 'Education'}}
       ${education.map((school) => {
         const {
-          institution = '',
-          location = '',
-          area = '',
+          institution,
           studyType = '',
-          score = '',
-          startDate = '',
+          area = '',
+          score,
+          location,
+          startDate,
           endDate = ''
         } = school
 
-        const degreeLine = [studyType, area].filter(Boolean).join(' ')
+        let degreeLine = ''
+
+        if (studyType && area) {
+          degreeLine = `${studyType} in ${area}.`
+        } else if (studyType || area) {
+          degreeLine = (studyType || area) + '.'
+        }
+
         let dateRange = ''
 
         if (startDate && endDate) {
-          dateRange = `${startDate} – ${endDate}`
+          dateRange = `${startDate} | ${endDate}`
         } else if (startDate) {
-          dateRange = `${startDate} – Present`
+          dateRange = `${startDate} | Present`
         } else {
           dateRange = endDate
         }
 
+        if (score) {
+          degreeLine += ` GPA: ${score}`
+        }
+
         return stripIndent`
-            \\school
-              {${institution}}
-              {${dateRange}}
-              {${degreeLine}}
-              {${location}}
-              {${
-                score
-                  ? `\\begin{newitemize}
-                  \\item ${score ? `GPA: ${score}` : ''}
-                \\end{newitemize}`
-                  : ''
-              }
-          }
+          \\begin{cvsubsection}{${location || ''}}{${institution || ''}}{${
+          dateRange || ''
+        }}
+            \\begin{itemize}
+              \\item ${degreeLine}
+            \\end{itemize}
+          \\end{cvsubsection}
         `
       })}
-      }
+      \\end{cvsection}
     `
   },
 
@@ -86,49 +94,46 @@ const generator: Omit<Generator, 'resumeHeader'> = {
     }
 
     return source`
-      % Chapter: Work Experience
-      % ------------------------
-      \\chap{${heading ? heading.toUpperCase() : 'EXPERIENCE'}}{
-
+      \\begin{cvsection}{${heading || 'Experience'}}
       ${work.map((job) => {
         const {
-          name = '',
-          position = '',
-          location = '',
-          startDate = '',
+          company: name,
+          position,
+          location,
+          startDate,
           endDate = '',
-          highlights = []
+          highlights
         } = job
 
         let dateRange = ''
-        let dutyLines = ''
+        let highlightLines = ''
 
         if (startDate && endDate) {
-          dateRange = `${startDate} – ${endDate}`
+          dateRange = `${startDate} -- ${endDate}`
         } else if (startDate) {
-          dateRange = `${startDate} – Present`
+          dateRange = `${startDate} -- Present`
         } else {
           dateRange = endDate
         }
 
         if (highlights && highlights.length > 0) {
-          dutyLines = source`
-            \\begin{newitemize}
-              ${highlights.map((duty) => `\\item {${duty}}`)}
-            \\end{newitemize}
+          highlightLines = source`
+            \\begin{itemize}%
+              ${highlights.map((highlight) => `\\item ${highlight}`)}
+            \\end{itemize}
             `
         }
 
         return stripIndent`
-          \\job
-            {${name}}
-            {${dateRange}}
-            {${position}}
-            {${location}}
-            {${dutyLines}}
+          \\begin{cvsubsection}{${position || ''}}{${name || ''}}{${
+          dateRange || ''
+        }}
+            ${location || ''}
+            ${highlightLines || ''}
+          \\end{cvsubsection}
         `
       })}
-    }
+      \\end{cvsection}
     `
   },
 
@@ -138,28 +143,16 @@ const generator: Omit<Generator, 'resumeHeader'> = {
     }
 
     return source`
-      % Chapter: Skills
-      % ------------------------
-
-      \\chap{${heading ? heading.toUpperCase() : 'SKILLS'}}{
-      \\begin{newitemize}
-        ${skills.map((skill) => {
-          const { name = '', keywords = [] } = skill
-
-          let item = ''
-
-          if (name) {
-            item += `${name}: `
-          }
-
-          if (keywords.length > 0) {
-            item += keywords.join(', ')
-          }
-
-          return `\\item ${item}`
-        })}
-      \\end{newitemize}
-      }
+      \\begin{cvsection}{${heading || 'Skills'}}
+      \\begin{cvsubsection}{}{}{}
+      \\begin{itemize}
+      ${skills.map((skill) => {
+        const { name, keywords = [] } = skill
+        return `\\item ${name ? `${name}: ` : ''} ${keywords.join(', ') || ''}`
+      })}
+      \\end{itemize}
+      \\end{cvsubsection}
+      \\end{cvsection}
     `
   },
 
@@ -169,33 +162,37 @@ const generator: Omit<Generator, 'resumeHeader'> = {
     }
 
     return source`
-      % Chapter: Projects
-      % ------------------------
+      \\begin{cvsection}{${heading || 'Projects'}}
+      \\begin{cvsubsection}{}{}{}
+      \\begin{itemize}
+      \\setlength\\itemsep{3pt}
+      ${projects.map((project) => {
+        const { name, description, keywords = [], url } = project
 
-      \\chap{${heading ? heading.toUpperCase() : 'PROJECTS'}}{
+        let line = ''
 
-        ${projects.map((project) => {
-          const {
-            name = '',
-            description = '',
-            keywords = [],
-            url = ''
-          } = project
+        if (name) {
+          line += `\\textbf{${name}} `
+        }
 
-          const descriptionWithNewline = description
-            ? `${description}\\\\`
-            : description
+        if (url) {
           const urlLine = url ? `\\href{${url}}{${url}}` : ''
+          line += `(${urlLine}) `
+        }
 
-          return stripIndent`
-            \\project
-              {${name}}
-              {${keywords.join(', ')}}
-              {${urlLine}}
-              {${descriptionWithNewline}}
-          `
-        })}
-      }
+        if (description) {
+          line += ` ${description}`
+        }
+
+        if (keywords) {
+          line += ` ${keywords.join(', ')}`
+        }
+
+        return `\\item ${line}`
+      })}
+      \\end{itemize}
+      \\end{cvsubsection}
+      \\end{cvsection}
     `
   },
 
@@ -205,68 +202,115 @@ const generator: Omit<Generator, 'resumeHeader'> = {
     }
 
     return source`
-      % Chapter: Awards
-      % ------------------------
+      \\begin{cvsection}{${heading || 'Awards'}}
+      \\begin{cvsubsection}{}{}{}
+      \\begin{itemize}
+      \\setlength\\itemsep{3pt}
+      ${awards.map((award) => {
+        const { title, summary, date, awarder } = award
 
-      \\chap{${heading ? heading.toUpperCase() : 'AWARDS'}}{
+        let line = ''
 
-        ${awards.map((award) => {
-          const { title = '', summary = '', awarder = '', date = '' } = award
+        if (title) {
+          line += `\\textbf{${title}} `
+        }
 
-          return stripIndent`
-            \\award
-              {${title}}
-              {${date}}
-              {${summary}}
-              {${awarder}}
-          `
-        })}
-      }
+        if (awarder) {
+          line += `(${awarder}) `
+        }
+
+        if (summary) {
+          line += ` ${summary}`
+        }
+
+        if (date) {
+          line += ` ${date}`
+        }
+
+        return `\\item ${line}`
+      })}
+      \\end{itemize}
+      \\end{cvsubsection}
+      \\end{cvsection}
+    `
+  },
+
+  resumeHeader() {
+    return stripIndent`
+      %% The MIT License (MIT)
+      %%
+      %% Copyright (c) 2015 Daniil Belyakov
+      %%
+      %% Permission is hereby granted, free of charge, to any person obtaining a copy
+      %% of this software and associated documentation files (the "Software"), to deal
+      %% in the Software without restriction, including without limitation the rights
+      %% to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+      %% copies of the Software, and to permit persons to whom the Software is
+      %% furnished to do so, subject to the following conditions:
+      %%
+      %% The above copyright notice and this permission notice shall be included in all
+      %% copies or substantial portions of the Software.
+      %%
+      %% THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+      %% IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+      %% FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+      %% AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+      %% LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+      %% OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+      %% SOFTWARE.
     `
   }
 }
 
-function template6(values: FormValues) {
+function template8(values: FormValues) {
   const { headings = {} } = values
 
   return stripIndent`
-    \\documentclass[10pt]{article}
-    \\usepackage[english]{babel}
+    ${generator.resumeHeader()}
+    % The font could be set to Windows-specific Calibri by using the 'calibri' option
+    \\documentclass[]{mcdowellcv}
+
+    % For mathematical symbols
+    \\usepackage{amsmath}
     \\usepackage[hidelinks]{hyperref}
-    \\input{minimal-resume-config}
+
+    ${generator.profileSection(values.basics)}
+
     \\begin{document}
-    ${values.sections
-      .map((section) => {
-        switch (section) {
-          case 'profile':
-            return generator.profileSection(values.basics)
+      % Print the header
+      \\makeheader
+      ${values.sections
+        .map((section) => {
+          switch (section) {
+            case 'education':
+              return generator.educationSection(
+                values.education,
+                headings.education
+              )
 
-          case 'education':
-            return generator.educationSection(
-              values.education,
-              headings.education
-            )
+            case 'work':
+              return generator.workSection(values.work, headings.work)
 
-          case 'work':
-            return generator.workSection(values.work, headings.work)
+            case 'skills':
+              return generator.skillsSection(values.skills, headings.skills)
 
-          case 'skills':
-            return generator.skillsSection(values.skills, headings.skills)
+            case 'projects':
+              return generator.projectsSection(
+                values.projects,
+                headings.projects
+              )
 
-          case 'projects':
-            return generator.projectsSection(values.projects, headings.projects)
+            case 'awards':
+              return generator.awardsSection(values.awards, headings.awards)
 
-          case 'awards':
-            return generator.awardsSection(values.awards, headings.awards)
-
-          default:
-            return ''
-        }
-      })
-      .join('\n')}
-    ${WHITESPACE}
+            default:
+              return ''
+          }
+        })
+        .join('\n')}
+      ${WHITESPACE}
     \\end{document}
   `
 }
 
-export default template6
+export default template8

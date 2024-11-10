@@ -4,19 +4,13 @@ import template3 from './template3'
 import template4 from './template4'
 import template5 from './template5'
 import template6 from './template6'
-import template7 from './template7'
-import template8 from './template8'
-import template9 from './template9'
 import {
   TEMPLATE1,
   TEMPLATE2,
   TEMPLATE3,
   TEMPLATE4,
   TEMPLATE5,
-  TEMPLATE6,
-  TEMPLATE7,
-  TEMPLATE8,
-  TEMPLATE9
+  TEMPLATE6
 } from './constants'
 import { FormValues, TemplateData } from '../../types'
 
@@ -75,7 +69,19 @@ export default function getTemplateData(data: FormValues): TemplateData {
       return {
         texDoc: template3(data),
         opts: {
-          cmd: 'pdflatex'
+          cmd: 'xelatex',
+          inputs: ['/templates/template3/deedy-resume-openfont.cls'],
+          fonts: [
+            '/templates/template3/fonts/Raleway-Bold.otf',
+            '/templates/template3/fonts/Raleway-ExtraBold.otf',
+            '/templates/template3/fonts/Raleway-ExtraLight.otf',
+            '/templates/template3/fonts/Raleway-Heavy.otf',
+            '/templates/template3/fonts/Raleway-Light.otf',
+            '/templates/template3/fonts/Raleway-Medium.otf',
+            '/templates/template3/fonts/Raleway-Regular.otf',
+            '/templates/template3/fonts/Raleway-SemiBold.otf',
+            '/templates/template3/fonts/Raleway-Thin.otf'
+          ]
         }
       }
 
@@ -84,17 +90,9 @@ export default function getTemplateData(data: FormValues): TemplateData {
         texDoc: template4(data),
         opts: {
           cmd: 'xelatex',
-          inputs: ['/templates/template4/deedy-resume-openfont.cls'],
-          fonts: [
-            '/templates/template4/fonts/Raleway-Bold.otf',
-            '/templates/template4/fonts/Raleway-ExtraBold.otf',
-            '/templates/template4/fonts/Raleway-ExtraLight.otf',
-            '/templates/template4/fonts/Raleway-Heavy.otf',
-            '/templates/template4/fonts/Raleway-Light.otf',
-            '/templates/template4/fonts/Raleway-Medium.otf',
-            '/templates/template4/fonts/Raleway-Regular.otf',
-            '/templates/template4/fonts/Raleway-SemiBold.otf',
-            '/templates/template4/fonts/Raleway-Thin.otf'
+          inputs: [
+            '/templates/template4/helvetica.sty',
+            '/templates/template4/res.cls'
           ]
         }
       }
@@ -105,8 +103,21 @@ export default function getTemplateData(data: FormValues): TemplateData {
         opts: {
           cmd: 'xelatex',
           inputs: [
-            '/templates/template5/helvetica.sty',
-            '/templates/template5/res.cls'
+            '/templates/template5/custom-command.tex',
+            '/templates/template5/minimal-resume-config.tex',
+            '/templates/template5/minimal-resume.sty'
+          ],
+          fonts: [
+            '/templates/template5/fonts/CrimsonText-Bold.ttf',
+            '/templates/template5/fonts/CrimsonText-BoldItalic.ttf',
+            '/templates/template5/fonts/CrimsonText-Italic.ttf',
+            '/templates/template5/fonts/CrimsonText-Regular.ttf',
+            '/templates/template5/fonts/CrimsonText-Roman.ttf',
+            '/templates/template5/fonts/CrimsonText-SemiBold.ttf',
+            '/templates/template5/fonts/CrimsonText-SemiBoldItalic.ttf',
+            '/templates/template5/fonts/Montserrat-Bold.ttf',
+            '/templates/template5/fonts/Montserrat-Light.otf',
+            '/templates/template5/fonts/Montserrat-Regular.ttf'
           ]
         }
       }
@@ -116,59 +127,10 @@ export default function getTemplateData(data: FormValues): TemplateData {
         texDoc: template6(data),
         opts: {
           cmd: 'xelatex',
-          inputs: [
-            '/templates/template6/custom-command.tex',
-            '/templates/template6/minimal-resume-config.tex',
-            '/templates/template6/minimal-resume.sty'
-          ],
-          fonts: [
-            '/templates/template6/fonts/CrimsonText-Bold.ttf',
-            '/templates/template6/fonts/CrimsonText-BoldItalic.ttf',
-            '/templates/template6/fonts/CrimsonText-Italic.ttf',
-            '/templates/template6/fonts/CrimsonText-Regular.ttf',
-            '/templates/template6/fonts/CrimsonText-Roman.ttf',
-            '/templates/template6/fonts/CrimsonText-SemiBold.ttf',
-            '/templates/template6/fonts/CrimsonText-SemiBoldItalic.ttf',
-            '/templates/template6/fonts/Montserrat-Bold.ttf',
-            '/templates/template6/fonts/Montserrat-Light.otf',
-            '/templates/template6/fonts/Montserrat-Regular.ttf'
-          ]
+          inputs: ['/templates/template6/mcdowellcv.cls']
         }
       }
 
-    case TEMPLATE7:
-      return {
-        texDoc: template7(data),
-        opts: {
-          cmd: 'pdflatex',
-          inputs: [
-            '/templates/template7/collection.sty',
-            '/templates/template7/moderncv.cls',
-            '/templates/template7/moderncvcolorblue.sty',
-            '/templates/template7/moderncviconsletters.sty',
-            '/templates/template7/moderncviconsmarvosym.sty',
-            '/templates/template7/moderncvstyleclassic.sty',
-            '/templates/template7/tweaklist.sty'
-          ]
-        }
-      }
-
-    case TEMPLATE8:
-      return {
-        texDoc: template8(data),
-        opts: {
-          cmd: 'xelatex',
-          inputs: ['/templates/template8/mcdowellcv.cls']
-        }
-      }
-
-    case TEMPLATE9:
-      return {
-        texDoc: template9(data),
-        opts: {
-          cmd: 'pdflatex'
-        }
-      }
 
     default:
       return {

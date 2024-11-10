@@ -2,56 +2,22 @@ import { stripIndent, source } from 'common-tags'
 import { WHITESPACE } from './constants'
 import type { FormValues, Generator } from '../../types'
 
-const generator: Generator = {
-  profileSection(profile) {
-    if (!profile) {
-      return '\\namesection{Your}{Name}{}'
+const generator: Omit<Generator, 'resumeHeader'> = {
+  profileSection(basics) {
+    if (!basics) {
+      return ''
     }
 
-    const { name, email, phone, location = {}, website } = profile
+    const { name, email, phone, location = {}, website } = basics
+    const websiteLine = website ? `\\href{${website}}{${website}}` : ''
 
-    let nameStart = ''
-    let nameEnd = ''
-
-    if (name) {
-      const names = name.split(' ')
-
-      if (names.length === 1) {
-        nameStart = names[0]
-        nameEnd = ''
-      } else {
-        nameStart = names[0]
-        nameEnd = names.slice(1, names.length).join(' ')
-      }
-    }
-
-    const info = [email, phone, location.address, website]
+    const info = [email, phone, location.address, websiteLine]
       .filter(Boolean)
       .join(' | ')
 
-    const sectionHeader = stripIndent`
-      %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-      %
-      %     Profile
-      %
-      %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    `
-
-    if (!name) {
-      return stripIndent`
-        ${sectionHeader}
-        \\centering{
-          \\color{headings}
-          \\fontspec[Path = fonts/raleway/]{Raleway-Medium}
-          \\fontsize{11pt}{14pt}
-          \\selectfont ${info}
-        }
-      `
-    }
-
     return stripIndent`
-      ${sectionHeader}
-      \\namesection{${nameStart}}{${nameEnd}}{${info}}
+      \\name{{\\LARGE ${name || ''}}}
+      \\address{${info}}
     `
   },
 
@@ -60,71 +26,69 @@ const generator: Generator = {
       return ''
     }
 
+    const lastSchoolIndex = education.length - 1
+
     return source`
-      %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-      %
-      %     Education
-      %
-      %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-      \\section{${heading || 'Education'}}
-      \\raggedright
-      ${education.map((school) => {
+      \\section{${heading || 'EDUCATION'}}
+      ${education.map((school, i) => {
         const {
           institution,
           location,
-          studyType,
-          area,
+          studyType = '',
+          area = '',
           score,
           startDate,
-          endDate
+          endDate = ''
         } = school
 
-        let line1 = ''
-        let line2 = ''
+        let schoolLine = ''
+        let degreeLine = ''
 
         if (institution) {
-          line1 += `\\runsubsection{${institution}}`
+          schoolLine += `\\textbf{${institution}}, `
         }
 
         if (studyType && area) {
-          line1 += `\\descript{| ${studyType} ${area}}`
-        } else if (studyType) {
-          line1 += `\\descript{| ${studyType}}`
-        } else if (area) {
-          line1 += `\\descript{| ${area}}`
+          degreeLine = `${studyType} in ${area}`
+        } else if (studyType || area) {
+          degreeLine = studyType || area
         }
 
-        let dateRange
+        if (degreeLine) {
+          schoolLine += `{\\sl ${degreeLine}} `
+        }
+
+        if (score) {
+          schoolLine += `GPA: ${score}`
+        }
+
+        let dateRange = ''
 
         if (startDate && endDate) {
-          dateRange = `${startDate} - ${endDate}`
+          dateRange = `${startDate} | ${endDate}`
         } else if (startDate) {
-          dateRange = `${startDate} - Present`
+          dateRange = `${startDate} | Present`
         } else {
           dateRange = endDate
         }
 
-        const locationAndDate = [location, dateRange]
-          .filter(Boolean)
-          .join(' | ')
-
-        if (locationAndDate) {
-          line1 += `\\hfill \\location{${locationAndDate}}`
+        if (dateRange) {
+          schoolLine += `\\hfill ${dateRange}`
         }
 
-        if (line1) {
-          line1 += '\\\\'
+        if (schoolLine) {
+          schoolLine += '\\\\'
         }
 
-        if (score) {
-          line2 += `GPA: ${score}\\\\`
+        if (location) {
+          schoolLine += `${location}`
         }
 
-        return `
-          ${line1}
-          ${line2}
-          \\sectionsep
-        `
+        if (i !== lastSchoolIndex) {
+          schoolLine += '\\\\\\\\'
+        }
+
+        return schoolLine
       })}
     `
   },
@@ -135,12 +99,7 @@ const generator: Generator = {
     }
 
     return source`
-      %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-      %
-      %     Experience
-      %
-      %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-      \\section{${heading || 'Experience'}}
+      \\section{${heading || 'EXPERIENCE'}}
       ${work.map((job) => {
         const {
           company: name,
@@ -151,49 +110,46 @@ const generator: Generator = {
           highlights
         } = job
 
-        let line1 = ''
+        let jobLine = ''
         let dateRange = ''
-        let highlightLines = ''
 
         if (name) {
-          line1 += `\\runsubsection{${name}}`
+          jobLine += `\\textbf{${name}}, `
         }
 
         if (position) {
-          line1 += `\\descript{| ${position}}`
+          jobLine += `{\\sl ${position}}`
         }
 
         if (startDate && endDate) {
-          dateRange = `${startDate} – ${endDate}`
+          dateRange = `${startDate} | ${endDate}`
         } else if (startDate) {
-          dateRange = `${startDate} – Present`
+          dateRange = `${startDate} | Present`
         } else {
           dateRange = endDate
         }
 
-        if (location && dateRange) {
-          line1 += `\\hfill \\location{${location} | ${dateRange}}`
-        } else if (location) {
-          line1 += `\\hfill \\location{${location}}`
-        } else if (dateRange) {
-          line1 += `\\hfill \\location{${dateRange}}`
+        if (dateRange) {
+          jobLine += `\\hfill ${dateRange}`
+        }
+
+        if (jobLine) {
+          jobLine += '\\\\'
+        }
+
+        if (location) {
+          jobLine += `${location}\\\\`
         }
 
         if (highlights && highlights.length > 0) {
-          highlightLines = source`
-            \\begin{tightemize}
-              ${highlights.map((highlight) => `\\item ${highlight}`)}
-            \\end{tightemize}
-            `
-        } else {
-          highlightLines = ''
+          jobLine += source`
+            \\begin{itemize} \\itemsep 3pt
+            ${highlights.map((highlight) => `\\item ${highlight}`)}
+            \\end{itemize}
+          `
         }
 
-        return stripIndent`
-          ${line1}
-          ${highlightLines}
-          \\sectionsep
-        `
+        return jobLine
       })}
     `
   },
@@ -204,20 +160,13 @@ const generator: Generator = {
     }
 
     return source`
-      %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-      %
-      %     Skills
-      %
-      %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-      \\section{${heading || 'Skills'}}
-      \\raggedright
-      \\begin{tabular}{ l l }
+      \\section{${heading || 'SKILLS'}}
+      \\begin{tabular}{@{}ll}
       ${skills.map((skill) => {
-        const { name = '', keywords = [] } = skill
-        return `\\descript{${name}} & {\\location{${keywords.join(', ')}}} \\\\`
+        const { name, keywords = [] } = skill
+        return `\\textbf{${name || ''}}: & ${keywords.join(', ') || ''}\\\\`
       })}
       \\end{tabular}
-      \\sectionsep
     `
   },
 
@@ -227,46 +176,34 @@ const generator: Generator = {
     }
 
     return source`
-      %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-      %
-      %     Projects
-      %
-      %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-      \\section{${heading || 'Projects'}}
-      \\raggedright
+      \\section{${heading || 'PROJECTS'}}
       ${projects.map((project) => {
-        const { name, description, keywords, url } = project
+        const { name, description, keywords = [], url } = project
 
-        let line1 = ''
-        let line2 = ''
-        let line3 = ''
+        let projectLine = ''
 
         if (name) {
-          line1 += `\\runsubsection{\\large{${name}}}`
+          projectLine += `\\textbf{${name}}`
         }
 
         if (keywords) {
-          line2 += `\\descript{| ${keywords.join(', ')}}`
-        }
-
-        if (url) {
-          line2 += `\\hfill \\location{${url}}`
-        }
-
-        if (line2) {
-          line2 += '\\\\'
+          projectLine += `, {\\sl ${keywords.join(', ')}}`
         }
 
         if (description) {
-          line3 += `${description}\\\\`
+          projectLine += projectLine ? `\\\\ ${description}` : description
         }
 
-        return `
-          ${line1}
-          ${line2}
-          ${line3}
-          \\sectionsep
-        `
+        if (url) {
+          const urlLine = url ? `\\href{${url}}{${url}}` : ''
+          projectLine += projectLine ? `\\\\ ${urlLine}` : urlLine
+        }
+
+        if (projectLine) {
+          projectLine += '\\\\\\\\'
+        }
+
+        return projectLine
       })}
     `
   },
@@ -277,119 +214,68 @@ const generator: Generator = {
     }
 
     return source`
-      %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-      %
-      %     Awards
-      %
-      %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-      \\section{${heading || 'Awards'}}
+      \\section{${heading || 'AWARDS'}}
       ${awards.map((award) => {
         const { title, summary, date, awarder } = award
-        const info = [awarder, date].filter(Boolean).join(' | ')
 
         return stripIndent`
-          \\runsubsection{\\large{${title || ''}}} \\descript{${info}} \\\\
-          ${summary ? `${summary}\\\\` : ''}
-          \\sectionsep
+            \\textbf{${title || ''}}, {\\sl ${awarder || ''}} \\hfill ${
+          date || ''
+        } \\\\
+            ${summary || ''} \\\\\\\\
         `
       })}
-    `
-  },
-
-  resumeHeader() {
-    return stripIndent`
-      %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-      % This is a modified ONE COLUMN version of
-      % the following template:
-      %
-      % Deedy - One Page Two Column Resume
-      % LaTeX Template
-      % Version 1.1 (30/4/2014)
-      %
-      % Original author:
-      % Debarghya Das (http://debarghyadas.com)
-      %
-      % Original repository:
-      % https://github.com/deedydas/Deedy-Resume
-      %
-      % IMPORTANT: THIS TEMPLATE NEEDS TO BE COMPILED WITH XeLaTeX
-      %
-      % This template uses several fonts not included with Windows/Linux by
-      % default. If you get compilation errors saying a font is missing, find the line
-      % on which the font is used and either change it to a font included with your
-      % operating system or comment the line out to use the default font.
-      %
-      %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-      %
-      % TODO:
-      % 1. Integrate biber/bibtex for article citation under publications.
-      % 2. Figure out a smoother way for the document to flow onto the next page.
-      % 3. Add styling information for a "Projects/Hacks" section.
-      % 4. Add location/address information
-      % 5. Merge OpenFont and MacFonts as a single sty with options.
-      %
-      %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-      %
-      % CHANGELOG:
-      % v1.1:
-      % 1. Fixed several compilation bugs with \\renewcommand
-      % 2. Got Open-source fonts (Windows/Linux support)
-      % 3. Added Last Updated
-      % 4. Move Title styling into .sty
-      % 5. Commented .sty file.
-      %
-      %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-      %
-      % Known Issues:
-      % 1. Overflows onto second page if any column's contents are more than the
-      % vertical limit
-      % 2. Hacky space on the first bullet point on the second column.
-      %
-      %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     `
   }
 }
 
-function template4(values: FormValues) {
+function template5(values: FormValues) {
   const { headings = {} } = values
 
   return stripIndent`
-    ${generator.resumeHeader()}
-    \\documentclass[]{deedy-resume-openfont}
-
+    \\documentclass[line,margin]{res}
+    \\usepackage[none]{hyphenat}
+    \\usepackage{textcomp}
+    \\usepackage[utf8]{inputenc}
+    \\usepackage[T1]{fontenc}
+    \\usepackage[hidelinks]{hyperref}
     \\begin{document}
-    ${values.sections
-      .map((section) => {
-        switch (section) {
-          case 'profile':
-            return generator.profileSection(values.basics)
+      ${generator.profileSection(values.basics)}
+      \\begin{resume}
+        \\vspace{-5mm}
+        ${values.sections
+          .map((section) => {
+            switch (section) {
+              case 'education':
+                return generator.educationSection(
+                  values.education,
+                  headings.education
+                )
 
-          case 'education':
-            return generator.educationSection(
-              values.education,
-              headings.education
-            )
+              case 'work':
+                return generator.workSection(values.work, headings.work)
 
-          case 'work':
-            return generator.workSection(values.work, headings.work)
+              case 'skills':
+                return generator.skillsSection(values.skills, headings.skills)
 
-          case 'skills':
-            return generator.skillsSection(values.skills, headings.skills)
+              case 'projects':
+                return generator.projectsSection(
+                  values.projects,
+                  headings.projects
+                )
 
-          case 'projects':
-            return generator.projectsSection(values.projects, headings.projects)
+              case 'awards':
+                return generator.awardsSection(values.awards, headings.awards)
 
-          case 'awards':
-            return generator.awardsSection(values.awards, headings.awards)
-
-          default:
-            return ''
-        }
-      })
-      .join('\n')}
-    ${WHITESPACE}
+              default:
+                return ''
+            }
+          })
+          .join('\n')}
+        ${WHITESPACE}
+      \\end{resume}
     \\end{document}
   `
 }
 
-export default template4
+export default template5

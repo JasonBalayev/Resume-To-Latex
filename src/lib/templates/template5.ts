@@ -8,16 +8,22 @@ const generator: Omit<Generator, 'resumeHeader'> = {
       return ''
     }
 
-    const { name, email, phone, location = {}, website } = basics
+    const { name = '', email, phone, location = {}, website } = basics
     const websiteLine = website ? `\\href{${website}}{${website}}` : ''
 
-    const info = [email, phone, location.address, websiteLine]
-      .filter(Boolean)
-      .join(' | ')
+    const info = [email, phone, location.address, websiteLine].filter(Boolean)
 
     return stripIndent`
-      \\name{{\\LARGE ${name || ''}}}
-      \\address{${info}}
+      \\begin{center}
+      % Personal
+      % -----------------------------------------------------
+      {\\fontsize{\\sizeone}{\\sizeone}\\fontspec[Path = fonts/,LetterSpace=15]{Montserrat-Regular} ${name.toUpperCase()}}
+      ${name && info.length > 1 ? '\\\\' : ''}
+      \\vspace{2mm}
+      {\\fontsize{1em}{1em}\\fontspec[Path = fonts/]{Montserrat-Light} ${info.join(
+        ' -- '
+      )}}
+      \\end{center}
     `
   },
 
@@ -26,70 +32,51 @@ const generator: Omit<Generator, 'resumeHeader'> = {
       return ''
     }
 
-    const lastSchoolIndex = education.length - 1
-
     return source`
-      \\section{${heading || 'EDUCATION'}}
-      ${education.map((school, i) => {
+      % Chapter: Education
+      % ------------------
+
+      \\chap{${heading ? heading.toUpperCase() : 'EDUCATION'}}{
+
+      ${education.map((school) => {
         const {
-          institution,
-          location,
-          studyType = '',
+          institution = '',
+          location = '',
           area = '',
-          score,
-          startDate,
+          studyType = '',
+          score = '',
+          startDate = '',
           endDate = ''
         } = school
 
-        let schoolLine = ''
-        let degreeLine = ''
-
-        if (institution) {
-          schoolLine += `\\textbf{${institution}}, `
-        }
-
-        if (studyType && area) {
-          degreeLine = `${studyType} in ${area}`
-        } else if (studyType || area) {
-          degreeLine = studyType || area
-        }
-
-        if (degreeLine) {
-          schoolLine += `{\\sl ${degreeLine}} `
-        }
-
-        if (score) {
-          schoolLine += `GPA: ${score}`
-        }
-
+        const degreeLine = [studyType, area].filter(Boolean).join(' ')
         let dateRange = ''
 
         if (startDate && endDate) {
-          dateRange = `${startDate} | ${endDate}`
+          dateRange = `${startDate} – ${endDate}`
         } else if (startDate) {
-          dateRange = `${startDate} | Present`
+          dateRange = `${startDate} – Present`
         } else {
           dateRange = endDate
         }
 
-        if (dateRange) {
-          schoolLine += `\\hfill ${dateRange}`
-        }
-
-        if (schoolLine) {
-          schoolLine += '\\\\'
-        }
-
-        if (location) {
-          schoolLine += `${location}`
-        }
-
-        if (i !== lastSchoolIndex) {
-          schoolLine += '\\\\\\\\'
-        }
-
-        return schoolLine
+        return stripIndent`
+            \\school
+              {${institution}}
+              {${dateRange}}
+              {${degreeLine}}
+              {${location}}
+              {${
+                score
+                  ? `\\begin{newitemize}
+                  \\item ${score ? `GPA: ${score}` : ''}
+                \\end{newitemize}`
+                  : ''
+              }
+          }
+        `
       })}
+      }
     `
   },
 
@@ -99,74 +86,80 @@ const generator: Omit<Generator, 'resumeHeader'> = {
     }
 
     return source`
-      \\section{${heading || 'EXPERIENCE'}}
+      % Chapter: Work Experience
+      % ------------------------
+      \\chap{${heading ? heading.toUpperCase() : 'EXPERIENCE'}}{
+
       ${work.map((job) => {
         const {
-          company: name,
-          position,
-          location,
-          startDate,
+          name = '',
+          position = '',
+          location = '',
+          startDate = '',
           endDate = '',
-          highlights
+          highlights = []
         } = job
 
-        let jobLine = ''
         let dateRange = ''
-
-        if (name) {
-          jobLine += `\\textbf{${name}}, `
-        }
-
-        if (position) {
-          jobLine += `{\\sl ${position}}`
-        }
+        let dutyLines = ''
 
         if (startDate && endDate) {
-          dateRange = `${startDate} | ${endDate}`
+          dateRange = `${startDate} – ${endDate}`
         } else if (startDate) {
-          dateRange = `${startDate} | Present`
+          dateRange = `${startDate} – Present`
         } else {
           dateRange = endDate
         }
 
-        if (dateRange) {
-          jobLine += `\\hfill ${dateRange}`
-        }
-
-        if (jobLine) {
-          jobLine += '\\\\'
-        }
-
-        if (location) {
-          jobLine += `${location}\\\\`
-        }
-
         if (highlights && highlights.length > 0) {
-          jobLine += source`
-            \\begin{itemize} \\itemsep 3pt
-            ${highlights.map((highlight) => `\\item ${highlight}`)}
-            \\end{itemize}
-          `
+          dutyLines = source`
+            \\begin{newitemize}
+              ${highlights.map((duty) => `\\item {${duty}}`)}
+            \\end{newitemize}
+            `
         }
 
-        return jobLine
+        return stripIndent`
+          \\job
+            {${name}}
+            {${dateRange}}
+            {${position}}
+            {${location}}
+            {${dutyLines}}
+        `
       })}
+    }
     `
   },
 
   skillsSection(skills, heading) {
-    if (!skills) {
+    if (!skills || skills.length === 0) {
       return ''
     }
 
     return source`
-      \\section{${heading || 'SKILLS'}}
-      \\begin{tabular}{@{}ll}
-      ${skills.map((skill) => {
-        const { name, keywords = [] } = skill
-        return `\\textbf{${name || ''}}: & ${keywords.join(', ') || ''}\\\\`
-      })}
-      \\end{tabular}
+      % Chapter: Skills
+      % ------------------------
+
+      \\chap{${heading ? heading.toUpperCase() : 'SKILLS'}}{
+      \\begin{newitemize}
+        ${skills.map((skill) => {
+          const { name = '', keywords = [] } = skill
+
+          let item = ''
+
+          if (name) {
+            item += `${name}: `
+          }
+
+          if (keywords.length > 0) {
+            item += keywords.join(', ')
+          }
+
+          return `\\item ${item}`
+        })}
+      \\end{newitemize}
+      }
     `
   },
 
@@ -176,35 +169,33 @@ const generator: Omit<Generator, 'resumeHeader'> = {
     }
 
     return source`
-      \\section{${heading || 'PROJECTS'}}
-      ${projects.map((project) => {
-        const { name, description, keywords = [], url } = project
+      % Chapter: Projects
+      % ------------------------
 
-        let projectLine = ''
+      \\chap{${heading ? heading.toUpperCase() : 'PROJECTS'}}{
 
-        if (name) {
-          projectLine += `\\textbf{${name}}`
-        }
+        ${projects.map((project) => {
+          const {
+            name = '',
+            description = '',
+            keywords = [],
+            url = ''
+          } = project
 
-        if (keywords) {
-          projectLine += `, {\\sl ${keywords.join(', ')}}`
-        }
-
-        if (description) {
-          projectLine += projectLine ? `\\\\ ${description}` : description
-        }
-
-        if (url) {
+          const descriptionWithNewline = description
+            ? `${description}\\\\`
+            : description
           const urlLine = url ? `\\href{${url}}{${url}}` : ''
-          projectLine += projectLine ? `\\\\ ${urlLine}` : urlLine
-        }
 
-        if (projectLine) {
-          projectLine += '\\\\\\\\'
-        }
-
-        return projectLine
-      })}
+          return stripIndent`
+            \\project
+              {${name}}
+              {${keywords.join(', ')}}
+              {${urlLine}}
+              {${descriptionWithNewline}}
+          `
+        })}
+      }
     `
   },
 
@@ -214,68 +205,68 @@ const generator: Omit<Generator, 'resumeHeader'> = {
     }
 
     return source`
-      \\section{${heading || 'AWARDS'}}
-      ${awards.map((award) => {
-        const { title, summary, date, awarder } = award
+      % Chapter: Awards
+      % ------------------------
 
-        return stripIndent`
-            \\textbf{${title || ''}}, {\\sl ${awarder || ''}} \\hfill ${
-          date || ''
-        } \\\\
-            ${summary || ''} \\\\\\\\
-        `
-      })}
+      \\chap{${heading ? heading.toUpperCase() : 'AWARDS'}}{
+
+        ${awards.map((award) => {
+          const { title = '', summary = '', awarder = '', date = '' } = award
+
+          return stripIndent`
+            \\award
+              {${title}}
+              {${date}}
+              {${summary}}
+              {${awarder}}
+          `
+        })}
+      }
     `
   }
 }
 
-function template5(values: FormValues) {
+function template6(values: FormValues) {
   const { headings = {} } = values
 
   return stripIndent`
-    \\documentclass[line,margin]{res}
-    \\usepackage[none]{hyphenat}
-    \\usepackage{textcomp}
-    \\usepackage[utf8]{inputenc}
-    \\usepackage[T1]{fontenc}
+    \\documentclass[10pt]{article}
+    \\usepackage[english]{babel}
     \\usepackage[hidelinks]{hyperref}
+    \\input{minimal-resume-config}
     \\begin{document}
-      ${generator.profileSection(values.basics)}
-      \\begin{resume}
-        \\vspace{-5mm}
-        ${values.sections
-          .map((section) => {
-            switch (section) {
-              case 'education':
-                return generator.educationSection(
-                  values.education,
-                  headings.education
-                )
+    ${values.sections
+      .map((section) => {
+        switch (section) {
+          case 'profile':
+            return generator.profileSection(values.basics)
 
-              case 'work':
-                return generator.workSection(values.work, headings.work)
+          case 'education':
+            return generator.educationSection(
+              values.education,
+              headings.education
+            )
 
-              case 'skills':
-                return generator.skillsSection(values.skills, headings.skills)
+          case 'work':
+            return generator.workSection(values.work, headings.work)
 
-              case 'projects':
-                return generator.projectsSection(
-                  values.projects,
-                  headings.projects
-                )
+          case 'skills':
+            return generator.skillsSection(values.skills, headings.skills)
 
-              case 'awards':
-                return generator.awardsSection(values.awards, headings.awards)
+          case 'projects':
+            return generator.projectsSection(values.projects, headings.projects)
 
-              default:
-                return ''
-            }
-          })
-          .join('\n')}
-        ${WHITESPACE}
-      \\end{resume}
+          case 'awards':
+            return generator.awardsSection(values.awards, headings.awards)
+
+          default:
+            return ''
+        }
+      })
+      .join('\n')}
+    ${WHITESPACE}
     \\end{document}
   `
 }
 
-export default template5
+export default template6
