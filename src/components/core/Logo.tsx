@@ -1,6 +1,8 @@
 import { colors } from '../../theme'
 import Image from 'next/image';
 import latexSVG from '../../lib/formula.svg'
+import images from '../../../public/images/LaTeXAndre.png'
+
 interface Props {
   marginTop?: string | number
   marginBottom?: string | number
@@ -13,7 +15,7 @@ export function Logo(props: Props) {
   return (
     <Image
       priority
-      src={latexSVG}
+      src={images}
       alt='latex logo'
     />
     
