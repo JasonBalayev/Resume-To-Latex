@@ -22,8 +22,8 @@ const Wrapper = styled.div`
   grid-template-rows: 1fr 75px;
   background: linear-gradient(135deg, #1a1a1d 0%, #0d0d0d 100%);
   animation: ${fadeIn} 0.5s ease-in;
-  overflow: hidden; /* Add this to prevent scrollbars due to cursor */
-  cursor: none; 
+  overflow: hidden;
+  cursor: none;
 `
 
 const Main = styled.main`
@@ -50,14 +50,13 @@ const Main = styled.main`
   }
 `
 
-// Cursor
 const Cursor = styled.div`
   position: fixed;
   top: 0;
   left: 0;
   width: 12px;
   height: 12px;
-  background-color: rgba(233, 69, 96, 0.8); /* Red color */
+  background-color: rgba(233, 69, 96, 0.8);
   border-radius: 50%;
   pointer-events: none;
   transform: translate(-50%, -50%);
@@ -84,10 +83,10 @@ const StyledButton = styled(Button)`
   background: linear-gradient(135deg, #333, ${darken(0.1, '#333')});
   color: #fff;
   border: none;
-  padding: 1em 3em; /* Increased padding */
-  font-size: 1em; /* Adjusted font size for better balance */
+  padding: 1em 3em;
+  font-size: 1em;
   font-weight: 500;
-  border-radius: 12px; /* Slightly more rounded corners */
+  border-radius: 12px;
   transition: background 0.3s, transform 0.2s;
   box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
 
@@ -101,16 +100,16 @@ const StyledButton = styled(Button)`
     transform: translateY(-1px);
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
   }
-`;
+`
 
 const StyledPrimaryButton = styled(PrimaryButton)`
   background: linear-gradient(135deg, #e94560, ${darken(0.1, '#e94560')});
   color: #fff;
   border: none;
-  padding: 1em 3em; /* Increased padding */
-  font-size: 1em; /* Adjusted font size for consistency */
+  padding: 1em 3em;
+  font-size: 1em;
   font-weight: 500;
-  border-radius: 12px; /* Slightly more rounded corners */
+  border-radius: 12px;
   transition: background 0.3s, transform 0.2s;
   box-shadow: 0 6px 12px rgba(233, 69, 96, 0.2);
 
@@ -124,7 +123,7 @@ const StyledPrimaryButton = styled(PrimaryButton)`
     transform: translateY(-1px);
     box-shadow: 0 4px 8px rgba(233, 69, 96, 0.2);
   }
-`;
+`
 
 const HiddenInput = styled.input`
   display: none;
@@ -153,7 +152,7 @@ export default function Home() {
 
   const startNewSession = () => {
     window.localStorage.clear()
-    router.push('/generator')
+    window.location.href = '/generator' // Force a full page reload
   }
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
