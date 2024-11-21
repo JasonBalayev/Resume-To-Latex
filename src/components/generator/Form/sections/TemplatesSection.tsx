@@ -1,11 +1,12 @@
 import { useFormContext, Controller } from 'react-hook-form'
 import { primary } from '../../../../theme/colors' 
 import { darken } from 'polished'
+import Image from 'next/image'
 
 import { FormSection } from './FormSection'
-import { TEMPLATES } from '../../../../lib/templates/constants'
-
+import { TEMPLATES, TEMPLATE_IMAGES } from '../../../../lib/templates/constants'
 import { FormValues } from '../../../../types'
+
 
 export function TemplatesSection() {
   const { control } = useFormContext<FormValues>()
@@ -42,6 +43,13 @@ export function TemplatesSection() {
                   e.currentTarget.style.background = `linear-gradient(135deg, ${primary}, ${darken(0.1, primary)})`
                 }}
               >
+                <Image 
+                  src={TEMPLATE_IMAGES[templateId - 1]} 
+                  alt={`Template ${templateId}`} 
+                  width={200}
+                  height={250}
+                  style={{ marginBottom: '8px' }} 
+                  />
                 <input
                   type="radio"
                   onChange={(e) => field.onChange(Number(e.target.value))}
