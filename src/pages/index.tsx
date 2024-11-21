@@ -177,7 +177,6 @@ export default function Home() {
   return (
     <Wrapper>
       <Main>
-        <Logo marginBottom="1.5em" />
         <h1>PDF To LaTeX Resume</h1>
         <p>Create a professional resume in minutes.</p>
         <ButtonGroup>
