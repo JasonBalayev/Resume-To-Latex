@@ -14,5 +14,14 @@ export const TEMPLATES = [
   TEMPLATE6,
 ]
 
+export const TEMPLATE_IMAGES = [
+  '/images/templates/template1.png',
+  '/images/templates/template2.png',
+  '/images/templates/template3.png',
+  '/images/templates/template4.png',
+  '/images/templates/template5.png',
+  '/images/templates/template6.png',
+]
+
 export const NEWLINE = '\\\\'
 export const WHITESPACE = '\\ '
