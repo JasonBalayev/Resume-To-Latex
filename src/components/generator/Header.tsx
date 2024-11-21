@@ -6,7 +6,7 @@ import { Logo } from '../core/Logo'
 const StyledHeader = styled.header`
   grid-area: header;
   width: 100%;
-  height: 75px;
+  height: 150px;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -16,11 +16,11 @@ const StyledHeader = styled.header`
 `
 
 export function Header() {
-  return (
-    <StyledHeader>
-      <Link href="/">
-        <Logo scale={0.65} />
-      </Link>
-    </StyledHeader>
-  )
+  // return (
+  //   <StyledHeader>
+  //     <Link href="/">
+  //       <Logo scale={0.65} />
+  //     </Link>
+  //   </StyledHeader>
+  // )
 }

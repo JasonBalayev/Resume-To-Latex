@@ -59,6 +59,29 @@ const StyledLink = styled(Link)<{ $active: boolean }>`
   }
 `
 
+const HomeButon = styled(PrimaryButton)`
+  background: linear-gradient(135deg, #e94560, ${darken(0.1, '#e94560')});
+  color: #fff;
+  border: none;
+  padding: 1em 3em;
+  font-size: 1em;
+  font-weight: bold;
+  border-radius: 12px;
+  transition: background 0.3s, transform 0.2s;
+  box-shadow: 0 6px 12px rgba(233, 69, 96, 0.2);
+
+  &:hover {
+    background: ${darken(0.15, '#e94560')};
+    transform: translateY(-3px);
+    box-shadow: 0 8px 16px rgba(233, 69, 96, 0.3);
+  }
+
+  &:active {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(233, 69, 96, 0.2);
+  }
+`
+
 const StyledMakeButton = styled(PrimaryButton)`
   background: linear-gradient(135deg, #e94560, ${darken(0.1, '#e94560')});
   color: #fff;
@@ -112,6 +135,13 @@ export function Sidebar() {
       <StyledMakeButton type="submit" form="resume-form">
         MAKE
       </StyledMakeButton>
+      <HomeButon
+        onClick={() => {
+          router.push('/')
+        }}
+      >
+        Go Home
+      </HomeButon>
     </Aside>
   )
 }
