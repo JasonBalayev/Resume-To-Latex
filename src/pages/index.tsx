@@ -6,6 +6,7 @@ import { darken } from 'polished'
 
 import { Logo } from '../components/core/Logo'
 import { PrimaryButton, Button } from '../components/core/Button'
+import { json } from 'stream/consumers'
 
 //Makes the API call to the function defined in the handler function of pages/api/generate-source.
 async function getJSON(file: File): Promise<any> {
@@ -18,7 +19,8 @@ async function getJSON(file: File): Promise<any> {
       )
     );
 
-    const response = await fetch('/api/generate', {
+    const response = await fetch('/api/generate-source', {
+      
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -31,11 +33,13 @@ async function getJSON(file: File): Promise<any> {
     });
 
     if (!response.ok) {
+      console.log(response)
       throw new Error(`Error: ${response.statusText}`);
     }
-
     const { jsonResult } = await response.json();
-    return jsonResult; // Return the JSON to the caller
+    console.log(jsonResult)
+    console.log(typeof(jsonResult))
+    return JSON.parse(jsonResult)
   } catch (error) {
     console.error('Error fetching JSON:', error);
     throw error; // Propagate the error for further handling
@@ -203,6 +207,7 @@ export default function Home() {
         const jsonResult = await getJSON(file);
   
         const sectionNames = Object.keys(jsonResult);
+        console.log(jsonResult)
         jsonResult.headings = sectionNames;
         jsonResult.sections = ['profile', 'education', 'work', 'skills', 'projects', 'awards'];
   
