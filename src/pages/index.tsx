@@ -20,7 +20,6 @@ async function getJSON(file: File): Promise<any> {
     );
 
     const response = await fetch('/api/generate-source', {
-      
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -33,18 +32,20 @@ async function getJSON(file: File): Promise<any> {
     });
 
     if (!response.ok) {
-      console.log(response)
-      throw new Error(`Error: ${response.statusText}`);
+      console.error(`Error: ${response.status} ${response.statusText}`);
+      throw new Error(`Server responded with ${response.status}: ${response.statusText}`);
     }
-    const { jsonResult } = await response.json();
-    console.log(jsonResult)
-    console.log(typeof(jsonResult))
-    return JSON.parse(jsonResult)
+
+    const { responseData } = await response.json(); // Adjusted to match server response
+    console.log(responseData);
+    if (!responseData) throw new Error('Empty response from server');
+    return JSON.parse(responseData);
   } catch (error) {
     console.error('Error fetching JSON:', error);
     throw error; // Propagate the error for further handling
   }
 }
+
 
 const fadeIn = keyframes`
   from {
