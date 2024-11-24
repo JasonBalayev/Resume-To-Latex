@@ -6,6 +6,46 @@ import { darken } from 'polished'
 
 import { Logo } from '../components/core/Logo'
 import { PrimaryButton, Button } from '../components/core/Button'
+import { json } from 'stream/consumers'
+
+//Makes the API call to the function defined in the handler function of pages/api/generate-source.
+async function getJSON(file: File): Promise<any> {
+  try {
+    const pdfArrayBuffer = await file.arrayBuffer();
+    const base64PDF = btoa(
+      new Uint8Array(pdfArrayBuffer).reduce(
+        (data, byte) => data + String.fromCharCode(byte),
+        ''
+      )
+    );
+
+    const response = await fetch('/api/generate-source', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        pdfToLatex: true,
+        pdfFile: base64PDF,
+        latexTemplate: '', // Optionally add your LaTeX template here
+      }),
+    });
+
+    if (!response.ok) {
+      console.error(`Error: ${response.status} ${response.statusText}`);
+      throw new Error(`Server responded with ${response.status}: ${response.statusText}`);
+    }
+
+    const { responseData } = await response.json(); // Adjusted to match server response
+    console.log(responseData);
+    if (!responseData) throw new Error('Empty response from server');
+    return JSON.parse(responseData);
+  } catch (error) {
+    console.error('Error fetching JSON:', error);
+    throw error; // Propagate the error for further handling
+  }
+}
+
 
 const fadeIn = keyframes`
   from {
@@ -129,6 +169,9 @@ const HiddenInput = styled.input`
   display: none;
 `
 
+
+
+
 export default function Home() {
   const router = useRouter()
   const [hasSession, setHasSession] = useState(false)
@@ -155,22 +198,29 @@ export default function Home() {
     window.location.href = '/generator' // Force a full page reload
   }
 
+  
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const reader = new FileReader()
-    reader.addEventListener('load', (e) => {
-      const jsonResume = JSON.parse(e.target?.result as string)
-      const sectionNames = Object.keys(jsonResume)
-      jsonResume.headings = sectionNames
-      jsonResume.sections = ['profile', 'education', 'work', 'skills', 'projects', 'awards']
-      localStorage.setItem('jsonResume', JSON.stringify(jsonResume))
-      router.push('/generator')
-    })
-
-    if (e.target.files) {
-      reader.readAsText(e.target.files[0])
+    if (e.target.files && e.target.files[0]) {
+      try {
+        //gets the uploaded file
+        const file = e.target.files[0]; 
+        //call to new getJSON method
+        const jsonResult = await getJSON(file);
+  
+        const sectionNames = Object.keys(jsonResult);
+        console.log(jsonResult)
+        jsonResult.headings = sectionNames;
+        jsonResult.sections = ['profile', 'education', 'work', 'skills', 'projects', 'awards'];
+  
+        localStorage.setItem('jsonResume', JSON.stringify(jsonResult));
+        router.push('/generator');
+      } catch (error) {
+        console.error('Error processing the file:', error);
+        alert('Failed to process the file. Please try again.');
+      }
     }
-  }
-
+  };
+  
   const handleMouseEnter = () => setIsHovered(true)
   const handleMouseLeave = () => setIsHovered(false)
 
@@ -209,7 +259,7 @@ export default function Home() {
           <HiddenInput
             id="import-json"
             type="file"
-            accept="application/json"
+            accept="application/pdf"
             onChange={handleFileUpload}
           />
         </ButtonGroup>

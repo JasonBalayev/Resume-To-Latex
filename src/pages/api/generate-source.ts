@@ -8,56 +8,199 @@ import pdf from 'pdf-parse'
 
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
 
+const MAX_RETRIES = 3
 const systemPrompt = `
-You are an AI assistant specializing in converting PDF resume content to LaTeX format. Your task is to:
+You are an AI assistant specializing in converting PDF resume content to a JSON format. Here is the JSON Foramt. 
+{
+  "basics": {
+    "name": "John Doe",
+    "label": "Programmer",
+    "image": "",
+    "email": "john@gmail.com",
+    "phone": "(912) 555-4321",
+    "url": "https://johndoe.com",
+    "summary": "A summary of John Doe…",
+    "location": {
+      "address": "2712 Broadway St",
+      "postalCode": "CA 94115",
+      "city": "San Francisco",
+      "countryCode": "US",
+      "region": "California"
+    },
+    "profiles": [{
+      "network": "Twitter",
+      "username": "john",
+      "url": "https://twitter.com/john"
+    }]
+  },
+  "work": [{
+    "name": "Company",
+    "position": "President",
+    "url": "https://company.com",
+    "startDate": "2013-01-01",
+    "endDate": "2014-01-01",
+    "summary": "Description…",
+    "highlights": [
+      "Started the company"
+    ]
+  }],
+  "volunteer": [{
+    "organization": "Organization",
+    "position": "Volunteer",
+    "url": "https://organization.com/",
+    "startDate": "2012-01-01",
+    "endDate": "2013-01-01",
+    "summary": "Description…",
+    "highlights": [
+      "Awarded 'Volunteer of the Month'"
+    ]
+  }],
+  "education": [{
+    "institution": "University",
+    "url": "https://institution.com/",
+    "area": "Software Development",
+    "studyType": "Bachelor",
+    "startDate": "2011-01-01",
+    "endDate": "2013-01-01",
+    "score": "4.0",
+    "courses": [
+      "DB1101 - Basic SQL"
+    ]
+  }],
+  "awards": [{
+    "title": "Award",
+    "date": "2014-11-01",
+    "awarder": "Company",
+    "summary": "There is no spoon."
+  }],
+  "certificates": [{
+    "name": "Certificate",
+    "date": "2021-11-07",
+    "issuer": "Company",
+    "url": "https://certificate.com"
+  }],
+  "publications": [{
+    "name": "Publication",
+    "publisher": "Company",
+    "releaseDate": "2014-10-01",
+    "url": "https://publication.com",
+    "summary": "Description…"
+  }],
+  "skills": [{
+    "name": "Web Development",
+    "level": "Master",
+    "keywords": [
+      "HTML",
+      "CSS",
+      "JavaScript"
+    ]
+  }],
+  "languages": [{
+    "language": "English",
+    "fluency": "Native speaker"
+  }],
+  "interests": [{
+    "name": "Wildlife",
+    "keywords": [
+      "Ferrets",
+      "Unicorns"
+    ]
+  }],
+  "references": [{
+    "name": "Jane Doe",
+    "reference": "Reference…"
+  }],
+  "projects": [{
+    "name": "Project",
+    "startDate": "2019-01-01",
+    "endDate": "2021-01-01",
+    "description": "Description...",
+    "highlights": [
+      "Won award at AIHacks 2016"
+    ],
+    "url": "https://project.com/"
+  }]
+}
+
+Your task is to:
 
 1. Analyze the provided text content extracted from a PDF resume.
-2. Fill out the given LaTeX template, replacing comments with appropriate content from the PDF.
-3. Ensure that the LaTeX code is properly formatted and compilable.
-4. Maintain the structure and style of the original LaTeX template.
-5. If certain information is not available in the PDF content, leave the corresponding LaTeX comments unchanged.
+2. return a JSON following this format in a string, and nothing else. Give the full JSON template, not just the parts that are filled.
+3. Ensure that the JSON properly formatted and compilable, following exactly the shown template.
+4. Maintain the structure and style of the original JSON template, we will be using pdf-parse to extract the content from the string result.
+5. If certain information is not available in the PDF content, simply leave it as an empty string.
 
-Please provide only the filled LaTeX code as your response, without any additional explanations or comments.
+Please provide only the filled JSON as your response, without any additional explanations or comments.
 `
+const retryPromptUser = ""
+export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+  const MAX_RETRIES = 3;
 
-export default async function handler(
-  req: NextApiRequest,
-  res: NextApiResponse
-) {
   if (req.method === 'POST' && req.body.pdfToLatex) {
-    // Handle PDF to LaTeX conversion request
-    try {
-      const pdfBuffer = Buffer.from(req.body.pdfFile, 'base64')
-      const pdfData = await pdf(pdfBuffer)
-      const pdfContent = pdfData.text
+    let retryCount = 0;
+    let responseData = '';
 
-      const { latexTemplate } = req.body
-      const response = await openai.chat.completions.create({
-        model: 'gpt-4',
-        messages: [
-          { role: 'system', content: systemPrompt },
-          { role: 'user', content: `PDF Content: ${pdfContent}\n\nLaTeX Template:\n${latexTemplate}` },
-        ],
-        max_tokens: 1000,
-        temperature: 0.2,
-      })
-      const latexCode = response.choices[0]?.message?.content?.trim() ?? ''
-      res.status(200).json({ latexCode })
-    } catch (error) {
-      console.error('Error processing PDF or generating LaTeX:', error)
-      res.status(500).json({ error: 'Error processing PDF or generating LaTeX code.' })
+    while (retryCount < MAX_RETRIES) {
+      try {
+        console.log("Starting PDF parsing...");
+        const pdfBuffer = Buffer.from(req.body.pdfFile, 'base64');
+        const pdfData = await pdf(pdfBuffer);
+        const pdfContent = pdfData.text;
+
+        console.log("PDF parsed successfully, making OpenAI API call...");
+        const { latexTemplate } = req.body;
+
+        const response = await openai.chat.completions.create({
+          model: 'gpt-4',
+          messages: [
+            { role: 'system', content: systemPrompt },
+            { role: 'user', content: `PDF Content: ${pdfContent}\n\nLaTeX Template:\n${latexTemplate}` },
+          ],
+          max_tokens: 1000,
+          temperature: 0.2,
+        });
+
+        responseData = response.choices[0]?.message?.content?.trim() ?? '';
+
+        if (isValidJSON(responseData)) {
+          console.log("Valid JSON response received");
+          return res.status(200).json({ responseData }); // Adjusted to match client expectation
+        } else {
+          console.log(`Invalid JSON response. Retrying... (${retryCount + 1}/${MAX_RETRIES})`);
+          retryCount++;
+        }
+      } catch (error) {
+        if (error instanceof Error) {
+          console.error(`Error during API call: ${error.message}`);
+        } else {
+          console.error("Unknown error occurred:", error);
+        }
+        retryCount++;
+      }
     }
-  } else if (req.method === 'POST') {
-    // Handle original resume generation request
-    const sourceCode = await generateSourceCode(req.body as FormValues)
-    sourceCode
-      .pipe(res)
-      .setHeader('content-type', 'application/zip')
-      .setHeader('content-disposition', 'attachment; filename="resume.zip"')
+
+    return res.status(500).json({ error: 'Failed to retrieve valid JSON after multiple attempts.' });
   } else {
-    res.status(405).end()
+    res.status(405).end();
   }
 }
+
+
+
+
+function isValidJSON(jsonString: string){
+  try {
+    const parsed = JSON.parse(jsonString);
+    // Add schema validation here if needed.
+    return parsed && typeof parsed === "object";
+  } catch (e) {
+    console.log("Did not get a valid JSON String")
+    return false;
+  }
+};
+
+
+
 
 /**
  * Generates resume source files from the request body,
