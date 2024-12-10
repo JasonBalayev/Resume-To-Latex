@@ -254,7 +254,7 @@ export default function Home() {
             onMouseEnter={handleMouseEnter}
             onMouseLeave={handleMouseLeave}
           >
-            Import JSON
+            Import PDF
           </StyledButton>
           <HiddenInput
             id="import-json"

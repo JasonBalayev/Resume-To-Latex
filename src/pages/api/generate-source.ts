@@ -6,7 +6,7 @@ import { FormValues } from '../../types'
 import OpenAI from 'openai'
 import pdf from 'pdf-parse'
 
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
+const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY }) 
 
 const MAX_RETRIES = 3
 const systemPrompt = `
