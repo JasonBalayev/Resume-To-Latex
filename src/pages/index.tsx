@@ -193,9 +193,7 @@ export default function Home() {
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       try {
-        //gets the uploaded file
-        const file = e.target.files[0]; 
-        //call to new getJSON method
+        const file = e.target.files[0];
         const jsonResult = await getJSON(file);
   
         const sectionNames = Object.keys(jsonResult);
@@ -205,7 +203,6 @@ export default function Home() {
         localStorage.setItem('jsonResume', JSON.stringify(jsonResult));
         router.push('/generator');
       } catch (error) {
-        console.error('Error processing the file:', error);
         alert('Failed to process the file. Please try again.');
       }
     }

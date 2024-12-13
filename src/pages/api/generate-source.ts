@@ -143,12 +143,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     while (retryCount < MAX_RETRIES) {
       try {
-        console.log("Starting PDF parsing...");
         const pdfBuffer = Buffer.from(req.body.pdfFile, 'base64');
         const pdfData = await pdf(pdfBuffer);
         const pdfContent = pdfData.text;
 
-        console.log("PDF parsed successfully, making OpenAI API call...");
         const { latexTemplate } = req.body;
 
         const response = await openai.chat.completions.create({
@@ -164,10 +162,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         responseData = response.choices[0]?.message?.content?.trim() ?? '';
 
         if (isValidJSON(responseData)) {
-          console.log("Valid JSON response received");
-          return res.status(200).json({ responseData }); // Adjusted to match client expectation
+          return res.status(200).json({ responseData });
         } else {
-          console.log(`Invalid JSON response. Retrying... (${retryCount + 1}/${MAX_RETRIES})`);
           retryCount++;
         }
       } catch (error) {
@@ -186,22 +182,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 }
 
-
-
-
 function isValidJSON(jsonString: string){
   try {
     const parsed = JSON.parse(jsonString);
-    // Add schema validation here if needed.
     return parsed && typeof parsed === "object";
   } catch (e) {
-    console.log("Did not get a valid JSON String")
     return false;
   }
 };
-
-
-
 
 // /**
 //  * Generates resume source files from the request body,
