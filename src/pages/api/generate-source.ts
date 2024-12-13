@@ -168,11 +168,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         }
       } catch (error) {
         if (error instanceof Error) {
-          console.error(`Error during API call: ${error.message}`);
-        } else {
-          console.error("Unknown error occurred:", error);
+          retryCount++;
         }
-        retryCount++;
       }
     }
 
@@ -189,7 +186,7 @@ function isValidJSON(jsonString: string){
   } catch (e) {
     return false;
   }
-};
+}
 
 // /**
 //  * Generates resume source files from the request body,
