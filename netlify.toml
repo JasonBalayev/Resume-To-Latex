@@ -7,5 +7,5 @@
 
 [build.environment]
   NEXT_USE_NETLIFY_EDGE = "true"
-  NODE_VERSION = "18"
+  NODE_VERSION = "20"
   NPM_FLAGS = "--no-audit --no-fund" 
