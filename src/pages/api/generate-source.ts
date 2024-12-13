@@ -8,7 +8,7 @@ import pdf from 'pdf-parse'
 
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY }) 
 
-const MAX_RETRIES = 3
+// const MAX_RETRIES = 3
 const systemPrompt = `
 You are an AI assistant specializing in converting PDF resume content to a JSON format. Here is the JSON Foramt. 
 {
@@ -134,17 +134,59 @@ Please provide only the filled JSON as your response, without any additional exp
 `
 const retryPromptUser = ""
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method not allowed' })
-  }
+  const MAX_RETRIES = 3;
 
-  try {
-    const result = await processRequest(req.body)
-    return res.status(200).json(result)
-  } catch (error) {
-    return res.status(500).json({ error: 'Internal server error' })
+  if (req.method === 'POST' && req.body.pdfToLatex) {
+    let retryCount = 0;
+    let responseData = '';
+
+    while (retryCount < MAX_RETRIES) {
+      try {
+        console.log("Starting PDF parsing...");
+        const pdfBuffer = Buffer.from(req.body.pdfFile, 'base64');
+        const pdfData = await pdf(pdfBuffer);
+        const pdfContent = pdfData.text;
+
+        console.log("PDF parsed successfully, making OpenAI API call...");
+        const { latexTemplate } = req.body;
+
+        const response = await openai.chat.completions.create({
+          model: 'gpt-4',
+          messages: [
+            { role: 'system', content: systemPrompt },
+            { role: 'user', content: `PDF Content: ${pdfContent}\n\nLaTeX Template:\n${latexTemplate}` },
+          ],
+          max_tokens: 1000,
+          temperature: 0.2,
+        });
+
+        responseData = response.choices[0]?.message?.content?.trim() ?? '';
+
+        if (isValidJSON(responseData)) {
+          console.log("Valid JSON response received");
+          return res.status(200).json({ responseData }); // Adjusted to match client expectation
+        } else {
+          console.log(`Invalid JSON response. Retrying... (${retryCount + 1}/${MAX_RETRIES})`);
+          retryCount++;
+        }
+      } catch (error) {
+        if (error instanceof Error) {
+          console.error(`Error during API call: ${error.message}`);
+        } else {
+          console.error("Unknown error occurred:", error);
+        }
+        retryCount++;
+      }
+    }
+
+    return res.status(500).json({ error: 'Failed to retrieve valid JSON after multiple attempts.' });
+  } else {
+    res.status(405).end();
   }
 }
+
+
+
 
 function isValidJSON(jsonString: string){
   try {
@@ -157,6 +199,17 @@ function isValidJSON(jsonString: string){
   }
 };
 
+
+
+
+/**
+ * Generates resume source files from the request body,
+ * and then saves it to a zip which is then sent to the client.
+ *
+ * @param formData The request body received from the client.
+ *
+ * @return The generated zip.
+ */
 function generateSourceCode(formData: FormValues) {
   const { texDoc, opts } = getTemplateData(formData)
   const prettyDoc = /*prettify(texDoc)*/ texDoc
@@ -175,6 +228,15 @@ function generateSourceCode(formData: FormValues) {
   return zip
 }
 
+/**
+ * Generates a README to include in the output zip.
+ * It details how to use the generated LaTeX source code.
+ *
+ * @param template The specified resume template.
+ * @param cmd The LaTeX command that is used to generate the PDF.
+ *
+ * @return The generated README text.
+ */
 function makeReadme(template: number, cmd: string): string {
   return stripIndent`
     # Resumake Template ${template}
