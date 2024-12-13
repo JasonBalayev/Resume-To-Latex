@@ -12,7 +12,7 @@
         "lint": "next lint",
         "format": "prettier --write src",
         "format:check": "prettier --check src",
-        "postinstall": "xcopy node_modules\\swiftlatex\\dist\\swift*.js public /I && xcopy node_modules\\swiftlatex\\dist\\*.wasm public /I"
+        "postinstall": "node scripts/copy-swiftlatex.js"
     },
     "dependencies": {
         "archiver": "^5.3.1",

@@ -1,5 +1,5 @@
 [build]
-  command = "npm run build"
+  command = "npm install && npm run build"
   publish = ".next"
 
 [[plugins]]
@@ -7,4 +7,5 @@
 
 [build.environment]
   NEXT_USE_NETLIFY_EDGE = "true"
-  NODE_VERSION = "18" 
+  NODE_VERSION = "18"
+  NPM_FLAGS = "--no-audit --no-fund" 
