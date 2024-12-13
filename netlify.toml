@@ -7,4 +7,5 @@
 
 [build.environment]
   NEXT_USE_NETLIFY_EDGE = "true"
-  NODE_VERSION = "18" 
+  NODE_VERSION = "18"
+  NEXT_TELEMETRY_DISABLED = "1" 
