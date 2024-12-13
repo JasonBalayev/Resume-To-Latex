@@ -79,8 +79,10 @@ export function Form() {
     setResume({ ...resume, isLoading: true });
     try {
       const newResumeUrl = await generateResume(formValues);
+      console.log('Generated URL:', newResumeUrl);
       setResume({ ...resume, url: newResumeUrl, isLoading: false });
     } catch (error) {
+      console.error('Resume generation error:', error);
       setResume({ ...resume, isError: true, isLoading: false });
     } finally {
       setIsGenerating(false);
