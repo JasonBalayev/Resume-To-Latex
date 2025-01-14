@@ -22,7 +22,6 @@ const fadeIn = keyframes`
   }
 `
 
-// Spinner animation remains the same
 const spin = keyframes`
   to {
     transform: rotate(360deg);
@@ -66,29 +65,41 @@ const PreviewContainer = styled.div`
   grid-area: preview;
   overflow-y: auto;
   padding: 2rem;
-  background: #0F0F0F;
+  background: #0f0f0f;
   display: flex;
   flex-direction: column;
   gap: 2rem;
 `
 
 const DownloadButton = styled.button`
+  width: 220px;
   background-color: #e94560;
   color: white;
-  padding: 0.75rem 1.5rem;
+  padding: 12px 24px;
   border: none;
-  border-radius: 4px;
+  border-radius: 8px;
   font-size: 1rem;
+  font-weight: 500;
   cursor: pointer;
-  transition: background-color 0.2s;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 
   &:hover {
     background-color: #d63d57;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+  }
+
+  &:active {
+    transform: translateY(1px);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
   }
 
   &:disabled {
     background-color: #666;
     cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
   }
 `
 
@@ -100,7 +111,6 @@ const PDFPreviewFrame = styled.iframe`
   background: white;
 `
 
-// LoadingOverlay and Spinner styled components remain the same
 const LoadingOverlay = styled.div`
   position: fixed;
   top: 0;
@@ -148,17 +158,14 @@ export default function GeneratorPage() {
       <Sidebar />
       <Form />
       <PreviewContainer>
-        <DownloadButton 
+        <DownloadButton
           onClick={handleDownload}
           disabled={!resume.url || resume.isLoading}
         >
           {resume.url ? 'Download PDF' : 'Must Make before downloading'}
         </DownloadButton>
         {resume.url && (
-          <PDFPreviewFrame
-            src={resume.url}
-            title="Resume Preview"
-          />
+          <PDFPreviewFrame src={resume.url} title="Resume Preview" />
         )}
         {resume.isError && (
           <div style={{ color: '#e94560', textAlign: 'center' }}>

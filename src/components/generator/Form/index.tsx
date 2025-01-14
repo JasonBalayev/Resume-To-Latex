@@ -72,22 +72,22 @@ export function Form() {
   }, [formContext])
 
   const handleFormSubmit = useCallback(async () => {
-    if (isGenerating) return;
+    if (isGenerating) return
 
-    setIsGenerating(true);
-    const formValues = formContext.getValues();
-    setResume({ ...resume, isLoading: true });
+    setIsGenerating(true)
+    const formValues = formContext.getValues()
+    setResume({ ...resume, isLoading: true })
     try {
-      const newResumeUrl = await generateResume(formValues);
-      console.log('Generated URL:', newResumeUrl);
-      setResume({ ...resume, url: newResumeUrl, isLoading: false });
+      const newResumeUrl = await generateResume(formValues)
+      console.log('Generated URL:', newResumeUrl)
+      setResume({ ...resume, url: newResumeUrl, isLoading: false })
     } catch (error) {
-      console.error('Resume generation error:', error);
-      setResume({ ...resume, isError: true, isLoading: false });
+      console.error('Resume generation error:', error)
+      setResume({ ...resume, isError: true, isLoading: false })
     } finally {
-      setIsGenerating(false);
+      setIsGenerating(false)
     }
-  }, [formContext, resume, setResume, isGenerating]);
+  }, [formContext, resume, setResume, isGenerating])
 
   return (
     <FormProvider {...formContext}>

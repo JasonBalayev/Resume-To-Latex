@@ -18,12 +18,12 @@ async function getJSON(file: File) {
     const response = await fetch('/api/generate-source', {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json',
+        'Content-Type': 'application/json'
       },
       body: JSON.stringify({
         pdfToLatex: true,
-        pdfFile: base64PDF,
-      }),
+        pdfFile: base64PDF
+      })
     })
 
     if (!response.ok) {
@@ -160,9 +160,6 @@ const HiddenInput = styled.input`
   display: none;
 `
 
-
-
-
 export default function Home() {
   const router = useRouter()
   const [hasSession, setHasSession] = useState(false)
@@ -189,25 +186,31 @@ export default function Home() {
     window.location.href = '/generator' // Force a full page reload
   }
 
-  
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       try {
-        const file = e.target.files[0];
-        const jsonResult = await getJSON(file);
-  
-        const sectionNames = Object.keys(jsonResult);
-        jsonResult.headings = sectionNames;
-        jsonResult.sections = ['profile', 'education', 'work', 'skills', 'projects', 'awards'];
-  
-        localStorage.setItem('jsonResume', JSON.stringify(jsonResult));
-        router.push('/generator');
+        const file = e.target.files[0]
+        const jsonResult = await getJSON(file)
+
+        const sectionNames = Object.keys(jsonResult)
+        jsonResult.headings = sectionNames
+        jsonResult.sections = [
+          'profile',
+          'education',
+          'work',
+          'skills',
+          'projects',
+          'awards'
+        ]
+
+        localStorage.setItem('jsonResume', JSON.stringify(jsonResult))
+        router.push('/generator')
       } catch (error) {
-        alert('Failed to process the file. Please try again.');
+        alert('Failed to process the file. Please try again.')
       }
     }
-  };
-  
+  }
+
   const handleMouseEnter = () => setIsHovered(true)
   const handleMouseLeave = () => setIsHovered(false)
 

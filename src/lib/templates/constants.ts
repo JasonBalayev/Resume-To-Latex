@@ -11,7 +11,7 @@ export const TEMPLATES = [
   TEMPLATE3,
   TEMPLATE4,
   TEMPLATE5,
-  TEMPLATE6,
+  TEMPLATE6
 ]
 
 export const TEMPLATE_IMAGES = [
@@ -20,7 +20,7 @@ export const TEMPLATE_IMAGES = [
   '/images/templates/template3.png',
   '/images/templates/template4.png',
   '/images/templates/template5.png',
-  '/images/templates/template6.png',
+  '/images/templates/template6.png'
 ]
 
 export const NEWLINE = '\\\\'

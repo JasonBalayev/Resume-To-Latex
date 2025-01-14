@@ -35,4 +35,4 @@ export const LoadingSpinner = () => (
 )
 
 // Add empty export to make it a module
-export {} 
+export {}

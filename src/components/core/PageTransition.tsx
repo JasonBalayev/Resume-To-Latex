@@ -20,4 +20,4 @@ export const PageTransition = () => (
   />
 )
 
-export {} 
+export {}

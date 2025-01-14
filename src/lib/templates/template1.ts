@@ -107,7 +107,14 @@ const generator: Generator = {
       \\vspace{1mm}
 
       ${work.map((job) => {
-        const { company: name, position, location, startDate, endDate, highlights } = job
+        const {
+          company: name,
+          position,
+          location,
+          startDate,
+          endDate,
+          highlights
+        } = job
         let line1 = ''
         let line2 = ''
         let highlightLines = ''

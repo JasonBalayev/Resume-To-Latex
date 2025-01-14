@@ -6,8 +6,7 @@ import pdf from 'pdf-parse'
 // import getTemplateData from '../../lib/templates'
 // import { FormValues } from '../../types'
 
-
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY }) 
+const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
 
 // const MAX_RETRIES = 3
 const systemPrompt = `
@@ -134,57 +133,65 @@ Your task is to:
 Please provide only the filled JSON as your response, without any additional explanations or comments.
 `
 // const retryPromptUser = ""
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  const MAX_RETRIES = 3;
+export default async function handler(
+  req: NextApiRequest,
+  res: NextApiResponse
+) {
+  const MAX_RETRIES = 3
 
   if (req.method === 'POST' && req.body.pdfToLatex) {
-    let retryCount = 0;
-    let responseData = '';
+    let retryCount = 0
+    let responseData = ''
 
     while (retryCount < MAX_RETRIES) {
       try {
-        const pdfBuffer = Buffer.from(req.body.pdfFile, 'base64');
-        const pdfData = await pdf(pdfBuffer);
-        const pdfContent = pdfData.text;
+        const pdfBuffer = Buffer.from(req.body.pdfFile, 'base64')
+        const pdfData = await pdf(pdfBuffer)
+        const pdfContent = pdfData.text
 
-        const { latexTemplate } = req.body;
+        const { latexTemplate } = req.body
 
         const response = await openai.chat.completions.create({
           model: 'gpt-4',
           messages: [
             { role: 'system', content: systemPrompt },
-            { role: 'user', content: `PDF Content: ${pdfContent}\n\nLaTeX Template:\n${latexTemplate}` },
+            {
+              role: 'user',
+              content: `PDF Content: ${pdfContent}\n\nLaTeX Template:\n${latexTemplate}`
+            }
           ],
           max_tokens: 1000,
-          temperature: 0.2,
-        });
+          temperature: 0.2
+        })
 
-        responseData = response.choices[0]?.message?.content?.trim() ?? '';
+        responseData = response.choices[0]?.message?.content?.trim() ?? ''
 
         if (isValidJSON(responseData)) {
-          return res.status(200).json({ responseData });
+          return res.status(200).json({ responseData })
         } else {
-          retryCount++;
+          retryCount++
         }
       } catch (error) {
         if (error instanceof Error) {
-          retryCount++;
+          retryCount++
         }
       }
     }
 
-    return res.status(500).json({ error: 'Failed to retrieve valid JSON after multiple attempts.' });
+    return res
+      .status(500)
+      .json({ error: 'Failed to retrieve valid JSON after multiple attempts.' })
   } else {
-    res.status(405).end();
+    res.status(405).end()
   }
 }
 
-function isValidJSON(jsonString: string){
+function isValidJSON(jsonString: string) {
   try {
-    const parsed = JSON.parse(jsonString);
-    return parsed && typeof parsed === "object";
+    const parsed = JSON.parse(jsonString)
+    return parsed && typeof parsed === 'object'
   } catch (e) {
-    return false;
+    return false
   }
 }
 

@@ -131,7 +131,6 @@ export default function getTemplateData(data: FormValues): TemplateData {
         }
       }
 
-
     default:
       return {
         texDoc: template1(data),

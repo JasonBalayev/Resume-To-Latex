@@ -53,7 +53,9 @@ const StyledPage = styled(Page)`
 
 export function Preview() {
   const [resume] = useAtom(resumeAtom)
-  const [scale] = useState(typeof window !== 'undefined' && window.innerWidth > 1440 ? 1.75 : 1)
+  const [scale] = useState(
+    typeof window !== 'undefined' && window.innerWidth > 1440 ? 1.75 : 1
+  )
 
   return (
     <Output>
