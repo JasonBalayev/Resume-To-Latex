@@ -76,17 +76,23 @@ export function Form() {
 
     setIsGenerating(true)
     const formValues = formContext.getValues()
-    setResume({ ...resume, isLoading: true })
+    setResume({ ...resume, isLoading: true, isError: false, errorMessage: '' })
     try {
       const newResumeUrl = await generateResume(formValues)
-      setResume({ ...resume, url: newResumeUrl, isLoading: false })
+      setResume({ 
+        ...resume, 
+        url: newResumeUrl, 
+        isLoading: false,
+        isError: false,
+        errorMessage: ''
+      })
     } catch (error) {
       setResume({
         ...resume,
+        url: '',
         isError: true,
         isLoading: false,
-        errorMessage:
-          error instanceof Error ? error.message : 'An error occurred'
+        errorMessage: error instanceof Error ? error.message : 'An error occurred'
       })
     } finally {
       setIsGenerating(false)

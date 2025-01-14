@@ -1,15 +1,19 @@
 import { atom } from 'jotai'
 
-export interface Resume {
+interface ResumeState {
   url: string
   isLoading: boolean
   isError: boolean
+  errorMessage?: string
 }
 
-export const resumeAtom = atom({
+const initialState: ResumeState = {
   url: '',
   isLoading: false,
-  isError: false
-})
+  isError: false,
+  errorMessage: ''
+}
+
+export const resumeAtom = atom<ResumeState>(initialState)
 
 resumeAtom.debugLabel = 'resumeAtom'
