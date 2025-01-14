@@ -2,7 +2,6 @@ import dynamic from 'next/dynamic'
 import styled, { keyframes } from 'styled-components'
 import { useAtom } from 'jotai'
 import { resumeAtom } from '../atoms/resume'
-
 import { Form } from '../components/generator/Form'
 import { Header } from '../components/generator/Header'
 import { Sidebar } from '../components/generator/Sidebar'
@@ -23,7 +22,7 @@ const fadeIn = keyframes`
   }
 `
 
-// Spinner
+// Spinner animation remains the same
 const spin = keyframes`
   to {
     transform: rotate(360deg);
@@ -49,6 +48,8 @@ const Main = styled.main`
       'header header'
       'sidebar form'
       'preview preview';
+    height: auto;
+    min-height: 100vh;
   }
 
   @media screen and (max-width: 768px) {
@@ -61,13 +62,52 @@ const Main = styled.main`
   }
 `
 
+const PreviewContainer = styled.div`
+  grid-area: preview;
+  overflow-y: auto;
+  padding: 2rem;
+  background: #0F0F0F;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+`
+
+const DownloadButton = styled.button`
+  background-color: #e94560;
+  color: white;
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 4px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color 0.2s;
+
+  &:hover {
+    background-color: #d63d57;
+  }
+
+  &:disabled {
+    background-color: #666;
+    cursor: not-allowed;
+  }
+`
+
+const PDFPreviewFrame = styled.iframe`
+  width: 100%;
+  height: 800px;
+  border: 1px solid #333;
+  border-radius: 4px;
+  background: white;
+`
+
+// LoadingOverlay and Spinner styled components remain the same
 const LoadingOverlay = styled.div`
   position: fixed;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  background-color: rgba(13, 13, 13, 0.9); /* Slightly darker background */
+  background-color: rgba(13, 13, 13, 0.9);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -90,6 +130,12 @@ const Spinner = styled.div`
 export default function GeneratorPage() {
   const [resume] = useAtom(resumeAtom)
 
+  const handleDownload = () => {
+    if (resume.url) {
+      window.open(resume.url, '_blank')
+    }
+  }
+
   return (
     <Main>
       {resume.isLoading && (
@@ -101,7 +147,25 @@ export default function GeneratorPage() {
       <Header />
       <Sidebar />
       <Form />
-      <Preview />
+      <PreviewContainer>
+        <DownloadButton 
+          onClick={handleDownload}
+          disabled={!resume.url || resume.isLoading}
+        >
+          {resume.url ? 'Download PDF' : 'Must Make before downloading'}
+        </DownloadButton>
+        {resume.url && (
+          <PDFPreviewFrame
+            src={resume.url}
+            title="Resume Preview"
+          />
+        )}
+        {resume.isError && (
+          <div style={{ color: '#e94560', textAlign: 'center' }}>
+            Error generating resume. Please try again.
+          </div>
+        )}
+      </PreviewContainer>
     </Main>
   )
 }
