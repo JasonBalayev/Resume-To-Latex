@@ -8,7 +8,7 @@ A platform for effortlessly creating professional LaTeX resumes without needing 
 
 Mentor: Srijith Gomattam
 
-Jason 
-Andre 
-Marvin 
-Vaivhab
+Jason Balayev
+Andre Coullard
+Marvin Gandhi
+Vaivhab Singh
