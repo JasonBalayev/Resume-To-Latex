@@ -1,15 +1,9 @@
-import dynamic from 'next/dynamic'
 import styled, { keyframes } from 'styled-components'
 import { useAtom } from 'jotai'
 import { resumeAtom } from '../atoms/resume'
 import { Form } from '../components/generator/Form'
 import { Header } from '../components/generator/Header'
 import { Sidebar } from '../components/generator/Sidebar'
-
-const Preview = dynamic(
-  async () => (await import('../components/generator/Preview')).Preview,
-  { ssr: false }
-)
 
 const fadeIn = keyframes`
   from {
